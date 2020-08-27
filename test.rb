@@ -14,7 +14,7 @@ gemfile(true) do
   gem 'sqlite3', '~> 1.3.6'
   gem 'mongoid', '~> 6.0'
   gem 'pry'
-  gem 'paper_trail', path: './'
+  gem 'mongo_trail', path: './'
 end
 
 require 'active_record'
@@ -27,7 +27,7 @@ PaperTrail.config.mongo_prefix = lambda do
   'test'
 end
 
-require 'paper_trail/mongo_support/config'
+require 'mongo_trail/mongo_support/config'
 
 
 ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
