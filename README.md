@@ -6,6 +6,23 @@ Track changes to your models, for auditing or versioning. See how a model looked
 at any stage in its lifecycle, revert it to any version, or restore it after it
 has been destroyed.
 
-## PaperTrail Author
+## How to Use
 
-Copyright (c) 2011 Andy Stewart (boss@airbladesoftware.com).
+Add to Gemfile
+
+```ruby
+  gem 'mongo-trail', git: 'https://github.com/noma4i/mongo-trail'
+```
+
+Create initializer like:
+
+```ruby
+PaperTrail.config.mongo_config = { hosts: ['localhost:27017'], database: 'my_test_db' }
+PaperTrail.config.mongo_prefix = lambda do
+  'my_cool_prefix'
+end
+
+require 'paper_trail/mongo_support/config'
+```
+
+Done!
