@@ -22,14 +22,7 @@ require 'minitest/autorun'
 require 'pry'
 
 PaperTrail.config.mongo_config = { hosts: ['localhost:27017'], database: 'my_test_db' }
-# Mongoid.configure do |config|
-#   config.clients.default = {
-#     hosts: ['localhost:27017'],
-#     database: 'mongo-trail'
-#   }
 
-#   config.log_level = :err
-# end
 PaperTrail.config.mongo_prefix = lambda do
   'test'
 end

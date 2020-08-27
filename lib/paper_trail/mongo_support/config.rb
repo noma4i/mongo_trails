@@ -6,5 +6,4 @@ Mongoid.configure do |config|
   config.log_level = :error
 end
 
-Mongoid.logger.level = Logger::FATAL
 Mongoid::QueryCache.enabled = false
