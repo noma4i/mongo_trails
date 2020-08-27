@@ -12,7 +12,7 @@ gemfile(true) do
 
   gem 'rails', '5.2.1'
   gem 'sqlite3', '~> 1.3.6'
-  gem 'mongoid', '~> 7.0.0'
+  gem 'mongoid', '~> 6.0'
   gem 'pry'
   gem 'paper_trail', path: './'
 end
@@ -22,9 +22,19 @@ require 'minitest/autorun'
 require 'pry'
 
 PaperTrail.config.mongo_config = { hosts: ['localhost:27017'], database: 'my_test_db' }
+# Mongoid.configure do |config|
+#   config.clients.default = {
+#     hosts: ['localhost:27017'],
+#     database: 'mongo-trail'
+#   }
+
+#   config.log_level = :err
+# end
 PaperTrail.config.mongo_prefix = lambda do
-  Time.now.to_s
+  'test'
 end
+
+require 'paper_trail/mongo_support/config'
 
 
 ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
@@ -53,6 +63,7 @@ end
 class SimpleTest < Minitest::Test
   def setup
     PaperTrail.request.whodunnit = 'Andy Stewart'
+
     Mongoid.purge!
     @user = User.create(name: 'Bob')
   end
