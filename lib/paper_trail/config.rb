@@ -15,7 +15,8 @@ module PaperTrail
       :serializer,
       :version_limit,
       :has_paper_trail_defaults,
-      :mongo_config
+      :mongo_config,
+      :mongo_prefix
     )
 
     def initialize

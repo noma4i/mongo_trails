@@ -11,6 +11,8 @@ module PaperTrail
     include Mongoid::Document
     include Mongoid::Autoinc
 
+    store_in collection: "#{PaperTrail.config.mongo_prefix.call}_versions"
+
     field :item_type, type: String
     field :item_id, type: Integer
     field :event, type: String

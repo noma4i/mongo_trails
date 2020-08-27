@@ -26,7 +26,6 @@ require "paper_trail/version_concern"
 require "paper_trail/version_number"
 require "paper_trail/serializers/json"
 require "paper_trail/serializers/yaml"
-require "paper_trail/mongo_support/version"
 
 # An ActiveRecord extension that tracks changes to your models, for auditing or
 # versioning.
@@ -134,6 +133,7 @@ end
 ActiveSupport.on_load(:active_record) do
   include PaperTrail::Model
   require "paper_trail/mongo_support/config"
+  require "paper_trail/mongo_support/version"
 end
 
 # require "paper_trail/mongo_support/config"

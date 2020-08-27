@@ -13,7 +13,6 @@ gemfile(true) do
   gem 'rails', '5.2.1'
   gem 'sqlite3', '~> 1.3.6'
   gem 'mongoid', '~> 7.0.0'
-  # gem 'mongoid-autoinc'
   gem 'pry'
   gem 'paper_trail', path: './'
 end
@@ -21,21 +20,12 @@ end
 require 'active_record'
 require 'minitest/autorun'
 require 'pry'
-# require 'autoinc'
-PaperTrail.config.version_limit = 10
+
 PaperTrail.config.mongo_config = { hosts: ['localhost:27017'], database: 'my_dbddddd' }
-# Mongoid.configure do |config|
-#   config.clients.default = {
-#     hosts: ['localhost:27017'],
-#     database: 'my_dbdddd'
-#   }
-# end
+PaperTrail.config.mongo_prefix = lambda do
+  Time.now.to_s
+end
 
-
-
-#   config.log_level = :err
-# end
-# Mongoid::QueryCache.enabled = true
 
 ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
 
@@ -49,60 +39,6 @@ ActiveRecord::Schema.define do
     t.string :body
   end
 end
-
-# module PaperTrail
-#   class Version
-#     include PaperTrail::VersionConcern
-#     include Mongoid::Document
-#     include Mongoid::Autoinc
-
-#     field :item_type, type: String
-#     field :item_id, type: Integer
-#     field :event, type: String
-#     field :whodunnit, type: String
-#     field :object, type: Hash
-#     field :object_changes, type: Hash
-#     field :created_at, type: DateTime
-#     field :id, type: Integer
-
-#     increments :id, seed: 0
-
-#     class << self
-#       def reset
-#         Mongoid::QueryCache.clear_cache
-#       end
-
-#       def find(id)
-#         find_by(id: id)
-#       end
-#     end
-
-#     def initialize(data)
-#       item = data.delete(:item)
-#       if item.present?
-#         data[:item_type] = item.class.name
-#         data[:item_id] = item.id
-#       end
-#       data[:created_at] = Time.now
-
-#       super
-#     end
-
-#     def item
-#       item_type.constantize.find(item_id)
-#     end
-#   end
-# end
-
-# class AutoIncrementCounters
-#   include Mongoid::Document
-# end
-
-# class Person
-#   include Mongoid::Document
-#   field :first_name, type: String
-#   field :last_name, type: String
-# end
 
 class Comment < ActiveRecord::Base
   belongs_to :user
@@ -118,8 +54,6 @@ class SimpleTest < Minitest::Test
   def setup
     PaperTrail.request.whodunnit = 'Andy Stewart'
     Mongoid.purge!
-    # PaperTrail::Version.all.delete
-    # AutoIncrementCounters.all.delete
     @user = User.create(name: 'Bob')
   end
 
