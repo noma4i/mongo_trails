@@ -25,7 +25,7 @@ module PaperTrail
     field :created_at, type: DateTime
     field :id, type: Integer
 
-    increments :id, seed: 0
+    increments :id, seed: 0, scope: -> { PaperTrail.config.mongo_prefix.is_a?(Proc) ? PaperTrail.config.mongo_prefix.call : 'paper_trail' }
 
     class << self
       def reset
