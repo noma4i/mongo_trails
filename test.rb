@@ -21,7 +21,7 @@ require 'active_record'
 require 'minitest/autorun'
 require 'pry'
 
-PaperTrail.config.mongo_config = { hosts: ['localhost:27017'], database: 'my_dbddddd' }
+PaperTrail.config.mongo_config = { hosts: ['localhost:27017'], database: 'my_test_db' }
 PaperTrail.config.mongo_prefix = lambda do
   Time.now.to_s
 end

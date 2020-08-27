@@ -11,7 +11,10 @@ module PaperTrail
     include Mongoid::Document
     include Mongoid::Autoinc
 
-    store_in collection: "#{PaperTrail.config.mongo_prefix.call}_versions"
+    store_in collection: ->() do
+      prefix = PaperTrail.config.mongo_prefix.is_a?(Proc) ? PaperTrail.config.mongo_prefix.call : 'paper_trail'
+      "#{prefix}_versions"
+    end
 
     field :item_type, type: String
     field :item_id, type: Integer
