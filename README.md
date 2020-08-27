@@ -11,7 +11,7 @@ has been destroyed.
 Add to Gemfile
 
 ```ruby
-  gem 'mongo-trail', git: 'https://github.com/noma4i/mongo-trail'
+  gem 'mongo-trail', git: 'https://github.com/noma4i/mongo_trail'
 ```
 
 Create initializer like:
