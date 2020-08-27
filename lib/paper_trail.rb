@@ -132,7 +132,6 @@ end
 # to learn more about `on_load`.
 ActiveSupport.on_load(:active_record) do
   include PaperTrail::Model
-  require "paper_trail/mongo_support/config"
   require "paper_trail/mongo_support/version"
 end
 
