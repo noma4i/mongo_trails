@@ -22,7 +22,7 @@ PaperTrail.config.mongo_prefix = lambda do
   'my_cool_prefix'
 end
 
-require 'paper_trail/mongo_support/config'
+require 'mongo_trail/mongo_support/config'
 ```
 
 Done!
