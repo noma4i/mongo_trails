@@ -23,9 +23,9 @@ module PaperTrail
     field :object, type: Hash
     field :object_changes, type: Hash
     field :created_at, type: DateTime
-    field :id, type: Integer
+    field :integer_id, type: Integer
 
-    increments :id, seed: 0, scope: -> { PaperTrail.config.mongo_prefix.is_a?(Proc) ? PaperTrail.config.mongo_prefix.call : 'paper_trail' }
+    increments :integer_id, scope: -> { PaperTrail.config.mongo_prefix.is_a?(Proc) ? PaperTrail.config.mongo_prefix.call : 'paper_trail' }
 
     class << self
       def reset
@@ -33,7 +33,7 @@ module PaperTrail
       end
 
       def find(id)
-        find_by(id: id)
+        find_by(integer_id: id)
       end
     end
 
@@ -43,7 +43,7 @@ module PaperTrail
         data[:item_type] = item.class.name
         data[:item_id] = item.id
       end
-      data[:created_at] = Time.now
+      data[:created_at] = Time.zone&.now || Time.now
 
       super
     end
