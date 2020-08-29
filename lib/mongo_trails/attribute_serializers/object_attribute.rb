@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "mongo_trail/attribute_serializers/cast_attribute_serializer"
+require "mongo_trails/attribute_serializers/cast_attribute_serializer"
 
 module PaperTrail
   module AttributeSerializers

@@ -1,6 +1,6 @@
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 $VERBOSE=nil
-require 'mongo_trail'
+require 'mongo_trails'
 
 require 'bundler/setup'
 Bundler.require(:default)
@@ -17,7 +17,7 @@ end
 
 Mongo::Logger.logger.level = Logger::INFO
 
-require 'mongo_trail/mongo_support/config'
+require 'mongo_trails/mongo_support/config'
 
 ActiveRecord::Schema.define do
   create_table :users, force: true do |t|

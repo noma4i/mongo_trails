@@ -2,18 +2,18 @@
 
 $LOAD_PATH.unshift File.expand_path("lib", __dir__)
 
-require "mongo_trail/compatibility"
-require "mongo_trail/version_number"
+require "mongo_trails/compatibility"
+require "mongo_trails/version_number"
 
 Gem::Specification.new do |s|
-  s.name = "mongo_trail"
+  s.name = "mongo_trails"
   s.version = PaperTrail::VERSION::STRING
   s.platform = Gem::Platform::RUBY
   s.summary = "PaperTrail DropIn replacement to store versions in MongoDB"
   s.description = <<-EOS
 PaperTrail DropIn replacement to store version in MongoDB
   EOS
-  s.homepage = "https://github.com/noma4i/mongo_trail"
+  s.homepage = "https://github.com/noma4i/mongo_trails"
   s.metadata['homepage_uri'] = s.homepage
   s.metadata['source_code_uri'] = s.homepage
   s.authors = ["Alex Tsirel","Ivan Romanyuk"]

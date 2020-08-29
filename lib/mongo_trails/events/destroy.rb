@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "mongo_trail/events/base"
+require "mongo_trails/events/base"
 
 module PaperTrail
   module Events

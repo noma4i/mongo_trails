@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "mongo_trail/type_serializers/postgres_array_serializer"
+require "mongo_trails/type_serializers/postgres_array_serializer"
 
 module PaperTrail
   module AttributeSerializers

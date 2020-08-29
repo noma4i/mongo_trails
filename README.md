@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/noma4i/mongo_trail.svg?branch=master)](https://travis-ci.com/noma4i/mongo_trail)
+[![Build Status](https://travis-ci.com/noma4i/mongo_trails.svg?branch=master)](https://travis-ci.com/noma4i/mongo_trails)
 
 # PaperTrail to MongoDB storage
 
@@ -13,7 +13,7 @@ has been destroyed.
 Add to Gemfile
 
 ```ruby
-  gem 'mongo-trail', git: 'https://github.com/noma4i/mongo_trail'
+  gem 'mongo-trail', git: 'https://github.com/noma4i/mongo_trails'
 ```
 
 Create initializer like:
@@ -24,13 +24,13 @@ PaperTrail.config.mongo_prefix = lambda do
   'my_cool_prefix'
 end
 
-require 'mongo_trail/mongo_support/config'
+require 'mongo_trails/mongo_support/config'
 ```
 
 Done!
 
 ## Using Rspec
 
-`require 'mongo_trail/frameworks/rspec'`
+`require 'mongo_trails/frameworks/rspec'`
 
 API is the same as `paper_trail`

@@ -47,7 +47,7 @@ module PaperTrail
       private
 
       # Rails 5.1 changed the API of `ActiveRecord::Dirty`. See
-      # https://github.com/paper-trail-gem/mongo_trail/pull/899
+      # https://github.com/paper-trail-gem/mongo_trails/pull/899
       #
       # @api private
       def attribute_changed_in_latest_version?(attr_name)
@@ -85,7 +85,7 @@ module PaperTrail
       end
 
       # Rails 5.1 changed the API of `ActiveRecord::Dirty`. See
-      # https://github.com/paper-trail-gem/mongo_trail/pull/899
+      # https://github.com/paper-trail-gem/mongo_trails/pull/899
       #
       # Event can be any of the three (create, update, destroy).
       #
@@ -132,7 +132,7 @@ module PaperTrail
       end
 
       # Rails 5.1 changed the API of `ActiveRecord::Dirty`. See
-      # https://github.com/paper-trail-gem/mongo_trail/pull/899
+      # https://github.com/paper-trail-gem/mongo_trails/pull/899
       #
       # @api private
       def changes_in_latest_version

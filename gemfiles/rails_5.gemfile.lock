@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    mongo_trail (1.0.0)
+    mongo_trails (10.3.1)
       activerecord (>= 5.2)
       mongoid (< 8)
       mongoid-autoinc (< 7)
@@ -55,7 +55,7 @@ DEPENDENCIES
   activerecord (~> 5.0)
   appraisal (~> 2.3)
   minitest (~> 5.0)
-  mongo_trail!
+  mongo_trails!
   rake (~> 12.0)
   sqlite3 (~> 1.4)
 

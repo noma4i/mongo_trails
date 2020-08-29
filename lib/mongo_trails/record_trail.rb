@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "mongo_trail/events/create"
-require "mongo_trail/events/destroy"
-require "mongo_trail/events/update"
+require "mongo_trails/events/create"
+require "mongo_trails/events/destroy"
+require "mongo_trails/events/update"
 
 module PaperTrail
   # Represents the "paper trail" for a single record.

@@ -2,7 +2,7 @@
 
 require "rspec/core"
 require "rspec/matchers"
-require "mongo_trail/frameworks/rspec/helpers"
+require "mongo_trails/frameworks/rspec/helpers"
 
 RSpec.configure do |config|
   config.include ::PaperTrail::RSpec::Helpers::InstanceMethods

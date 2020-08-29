@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "singleton"
-require "mongo_trail/serializers/yaml"
+require "mongo_trails/serializers/yaml"
 
 module PaperTrail
   # Global configuration affecting all threads. Some thread-specific

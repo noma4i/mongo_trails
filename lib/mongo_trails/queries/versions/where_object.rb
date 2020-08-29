@@ -4,7 +4,7 @@ module PaperTrail
   module Queries
     module Versions
       # For public API documentation, see `where_object` in
-      # `mongo_trail/version_concern.rb`.
+      # `mongo_trails/version_concern.rb`.
       # @api private
       class WhereObject
         # - version_model_class - The class that VersionConcern was mixed into.

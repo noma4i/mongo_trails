@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "mongo_trail/attribute_serializers/object_attribute"
+require "mongo_trails/attribute_serializers/object_attribute"
 
 module PaperTrail
   # Given a version record and some options, builds a new model object.

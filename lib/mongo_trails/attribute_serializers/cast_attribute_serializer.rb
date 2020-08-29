@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "mongo_trail/attribute_serializers/attribute_serializer_factory"
+require "mongo_trails/attribute_serializers/attribute_serializer_factory"
 
 module PaperTrail
   # :nodoc:

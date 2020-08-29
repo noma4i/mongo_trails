@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "mongo_trail/attribute_serializers/object_changes_attribute"
-require "mongo_trail/queries/versions/where_object"
-require "mongo_trail/queries/versions/where_object_changes"
+require "mongo_trails/attribute_serializers/object_changes_attribute"
+require "mongo_trails/queries/versions/where_object"
+require "mongo_trails/queries/versions/where_object_changes"
 
 module PaperTrail
   # Originally, PaperTrail did not provide this module, and all of this

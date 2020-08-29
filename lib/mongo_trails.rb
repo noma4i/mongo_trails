@@ -15,17 +15,17 @@ require "active_support/all"
 require "active_record"
 
 require "request_store"
-require "mongo_trail/cleaner"
-require "mongo_trail/compatibility"
-require "mongo_trail/config"
-require "mongo_trail/has_paper_trail"
-require "mongo_trail/record_history"
-require "mongo_trail/reifier"
-require "mongo_trail/request"
-require "mongo_trail/version_concern"
-require "mongo_trail/version_number"
-require "mongo_trail/serializers/json"
-require "mongo_trail/serializers/yaml"
+require "mongo_trails/cleaner"
+require "mongo_trails/compatibility"
+require "mongo_trails/config"
+require "mongo_trails/has_paper_trail"
+require "mongo_trails/record_history"
+require "mongo_trails/reifier"
+require "mongo_trails/request"
+require "mongo_trails/version_concern"
+require "mongo_trails/version_number"
+require "mongo_trails/serializers/json"
+require "mongo_trails/serializers/yaml"
 
 # An ActiveRecord extension that tracks changes to your models, for auditing or
 # versioning.
@@ -132,10 +132,10 @@ end
 # to learn more about `on_load`.
 ActiveSupport.on_load(:active_record) do
   include PaperTrail::Model
-  require "mongo_trail/mongo_support/version"
+  require "mongo_trails/mongo_support/version"
 end
 
-# require "mongo_trail/mongo_support/config"
+# require "mongo_trails/mongo_support/config"
 
 # Require frameworks
 if defined?(::Rails)
@@ -143,7 +143,7 @@ if defined?(::Rails)
   # so we check for presence of Rails.application.
 
   if defined?(::Rails.application)
-    require "mongo_trail/frameworks/rails"
+    require "mongo_trails/frameworks/rails"
   else
     ::Kernel.warn(::PaperTrail::E_RAILS_NOT_LOADED)
   end

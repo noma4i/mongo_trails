@@ -9,7 +9,7 @@ module PaperTrail
         Please use PaperTrail.enabled= instead. People were getting confused
         that PT has both, specifically regarding *when* each was happening. If
         you'd like to keep config.paper_trail, join the discussion at
-        https://github.com/paper-trail-gem/mongo_trail/pull/1176
+        https://github.com/paper-trail-gem/mongo_trails/pull/1176
       EOS
       private_constant :DPR_CONFIG_ENABLED
       DPR_RUDELY_ENABLING = <<~EOS.squish.freeze
@@ -19,7 +19,7 @@ module PaperTrail
         has worked since 5.0, when the config.paper_trail.enabled option was
         introduced. This is now deprecated. In the future, PT will not override
         your setting. See
-        https://github.com/paper-trail-gem/mongo_trail/pull/1176 for discussion.
+        https://github.com/paper-trail-gem/mongo_trails/pull/1176 for discussion.
       EOS
       private_constant :DPR_RUDELY_ENABLING
 

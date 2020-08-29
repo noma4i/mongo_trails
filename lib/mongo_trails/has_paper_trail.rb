@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "mongo_trail/attribute_serializers/object_attribute"
-require "mongo_trail/attribute_serializers/object_changes_attribute"
-require "mongo_trail/model_config"
-require "mongo_trail/record_trail"
+require "mongo_trails/attribute_serializers/object_attribute"
+require "mongo_trails/attribute_serializers/object_changes_attribute"
+require "mongo_trails/model_config"
+require "mongo_trails/record_trail"
 
 module PaperTrail
   # Extensions to `ActiveRecord::Base`.  See `frameworks/active_record.rb`.
