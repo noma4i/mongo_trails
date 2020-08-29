@@ -9,6 +9,7 @@ RSpec.configure do |config|
   config.extend ::PaperTrail::RSpec::Helpers::ClassMethods
 
   config.before(:each) do
+    ::Mongoid.purge!
     ::PaperTrail.enabled = false
     ::PaperTrail.request.enabled = true
     ::PaperTrail.request.whodunnit = nil
