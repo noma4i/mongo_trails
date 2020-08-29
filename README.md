@@ -26,3 +26,9 @@ require 'mongo_trail/mongo_support/config'
 ```
 
 Done!
+
+## Using Rspec
+
+`require 'mongo_trail/frameworks/rspec'`
+
+API is the same as `paper_trail`

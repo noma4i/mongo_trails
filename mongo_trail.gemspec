@@ -20,11 +20,15 @@ PaperTrail DropIn replacement to store version in MongoDB
   s.files = `git ls-files -z`.split("\x0").select { |f|
     f.match(%r{^(Gemfile|LICENSE|lib|mongo-trail.gemspec)/})
   }
-  s.executables = []
-  s.require_paths = ["lib"]
+
+  s.bindir        = 'exe'
+  s.executables   = s.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  s.require_paths = ['lib']
 
   s.add_dependency "activerecord", ::PaperTrail::Compatibility::ACTIVERECORD_GTE
   s.add_dependency "request_store", "~> 1.1"
-  s.add_dependency "mongoid", "~> 6.0"
+  s.add_dependency "mongoid", "< 8"
   s.add_dependency "mongoid-autoinc", "< 7"
+
+  s.add_development_dependency 'sqlite3', '~> 1.4'
 end

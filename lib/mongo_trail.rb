@@ -147,8 +147,6 @@ if defined?(::Rails)
   else
     ::Kernel.warn(::PaperTrail::E_RAILS_NOT_LOADED)
   end
-else
-  require "mongo_trail/frameworks/active_record"
 end
 
 if defined?(::ActiveRecord)
