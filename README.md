@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/noma4i/mongo_trail.svg?branch=master)](https://travis-ci.com/noma4i/mongo_trail)
+
 # PaperTrail to MongoDB storage
 
 Based on paper-trail gem `v10.3.1`
