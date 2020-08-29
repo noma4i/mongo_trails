@@ -13,7 +13,7 @@ has been destroyed.
 Add to Gemfile
 
 ```ruby
-  gem 'mongo-trail', git: 'https://github.com/noma4i/mongo_trails'
+  gem 'mongo_trails', git: 'https://github.com/noma4i/mongo_trails'
 ```
 
 Create initializer like:
