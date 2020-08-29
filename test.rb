@@ -78,7 +78,10 @@ class SimpleTest < Minitest::Test
     assert_equal changeset, @user.versions.last.changeset
 
     PaperTrail::Version.find(1).next.reify.save!
-
     assert_equal 'Bob', User.first.name
+    @user.update!(name: 'Tom')
+    PaperTrail::Version.find(3).previous.reify.save!
+    assert_equal 'Bob', User.first.name
+
   end
 end

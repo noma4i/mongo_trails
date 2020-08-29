@@ -19,7 +19,7 @@ module PaperTrail
       end
 
       def with_item_keys(item_type, item_id)
-        where item_type: item_type, item_id: item_id
+        where(item_type: item_type).and(item_id: item_id)
       end
 
       def creates
@@ -39,18 +39,13 @@ module PaperTrail
       end
 
       def between(start_time, end_time)
-        where(
-          arel_table[:created_at].gt(start_time).
-          and(arel_table[:created_at].lt(end_time))
-        ).order(timestamp_sort_order)
+        where(:created_at.gt => start_time).and(:created_at.lt => end_time).order(timestamp_sort_order)
       end
 
       # Defaults to using the primary key as the secondary sort order if
       # possible.
       def timestamp_sort_order(direction = "asc")
-        [arel_table[:created_at].send(direction.downcase)].tap do |array|
-          array << arel_table[primary_key].send(direction.downcase) if primary_key_is_int?
-        end
+        { created_at: direction.downcase }
       end
 
       # Given a hash of attributes like `name: 'Joan'`, query the
@@ -163,25 +158,24 @@ module PaperTrail
 
       # @api private
       def preceding_by_id(obj)
-        where(arel_table[primary_key].lt(obj.id)).order(arel_table[primary_key].desc)
+        where(:integer_id.lt => obj.integer_id).order(integer_id: :desc)
       end
 
       # @api private
       def preceding_by_timestamp(obj)
         obj = obj.send(:created_at) if obj.is_a?(self)
-        where(arel_table[:created_at].lt(obj)).
-          order(timestamp_sort_order("desc"))
+        where(:created_at.lt => obj).order(timestamp_sort_order("desc"))
       end
 
       # @api private
       def subsequent_by_id(version)
-        where(:id.gt => version.id ).order(created_at: :asc)
+        where(:integer_id.gt => version.integer_id).order(integer_id: :asc)
       end
 
       # @api private
       def subsequent_by_timestamp(obj)
         obj = obj.send(:created_at) if obj.is_a?(self)
-        where(arel_table[:created_at].gt(obj)).order(timestamp_sort_order)
+        where(:created_at.gt => obj).order(timestamp_sort_order)
       end
     end
 

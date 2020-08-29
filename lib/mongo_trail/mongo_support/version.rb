@@ -20,9 +20,9 @@ module PaperTrail
     field :object, type: Hash
     field :object_changes, type: Hash
     field :created_at, type: DateTime
-    field :id, type: Integer
+    field :integer_id, type: Integer
 
-    increments :id, seed: 0, scope: -> { PaperTrail::Version.prefix_map }
+    increments :integer_id, scope: -> { PaperTrail::Version.prefix_map }
 
     class << self
       def reset
@@ -30,7 +30,7 @@ module PaperTrail
       end
 
       def find(id)
-        find_by(id: id)
+        find_by(integer_id: id)
       end
 
       def prefix_map
@@ -44,7 +44,7 @@ module PaperTrail
         data[:item_type] = item.class.name
         data[:item_id] = item.id
       end
-      data[:created_at] = Time.now
+      data[:created_at] = Time.zone&.now || Time.now
 
       super
     end
