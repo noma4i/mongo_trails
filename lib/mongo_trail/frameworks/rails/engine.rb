@@ -23,8 +23,6 @@ module PaperTrail
       EOS
       private_constant :DPR_RUDELY_ENABLING
 
-      paths["app/models"] << "lib/mongo_trail/frameworks/active_record/models"
-
       # --- Begin deprecated section ---
       config.paper_trail = ActiveSupport::OrderedOptions.new
       initializer "paper_trail.initialisation" do |app|
