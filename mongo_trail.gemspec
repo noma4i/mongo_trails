@@ -7,7 +7,7 @@ require "mongo_trail/version_number"
 
 Gem::Specification.new do |s|
   s.name = "mongo_trail"
-  s.version = "1.0.0"
+  s.version = PaperTrail::VERSION::STRING
   s.platform = Gem::Platform::RUBY
   s.summary = "PaperTrail DropIn replacement to store versions in MongoDB"
   s.description = <<-EOS
