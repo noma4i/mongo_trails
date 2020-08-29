@@ -31,4 +31,5 @@ PaperTrail DropIn replacement to store version in MongoDB
   s.add_dependency "mongoid-autoinc", "< 7"
 
   s.add_development_dependency 'sqlite3', '~> 1.4'
+  s.add_development_dependency 'appraisal', '~> 2.3'
 end

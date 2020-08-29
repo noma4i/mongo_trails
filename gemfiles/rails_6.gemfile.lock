@@ -1,5 +1,5 @@
 PATH
-  remote: .
+  remote: ..
   specs:
     mongo_trail (1.0.0)
       activerecord (>= 5.2)
@@ -52,6 +52,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activerecord (~> 6.0)
   appraisal (~> 2.3)
   minitest (~> 5.0)
   mongo_trail!
