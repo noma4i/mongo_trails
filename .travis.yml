@@ -8,4 +8,6 @@ gemfile:
   - gemfiles/rails_5.gemfile
   - gemfiles/rails_6.gemfile
 
+services: mongodb
+
 script: 'bundle exec rake test'
