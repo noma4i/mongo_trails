@@ -2,7 +2,7 @@
 
 # PaperTrail to MongoDB storage
 
-Based on paper-trail gem `v10.3.1`
+Based on paper-trail gem `v10.3.1`. All future versions will follow version of the parent Paper Trail gem
 
 Track changes to your models, for auditing or versioning. See how a model looked
 at any stage in its lifecycle, revert it to any version, or restore it after it
