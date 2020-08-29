@@ -11,10 +11,7 @@ module PaperTrail
     include Mongoid::Document
     include Mongoid::Autoinc
 
-    store_in collection: ->() do
-      prefix = PaperTrail.config.mongo_prefix.is_a?(Proc) ? PaperTrail.config.mongo_prefix.call : 'paper_trail'
-      "#{prefix}_versions"
-    end
+    store_in collection: ->() { "#{PaperTrail::Version.prefix_map}_versions" }
 
     field :item_type, type: String
     field :item_id, type: Integer
@@ -25,7 +22,7 @@ module PaperTrail
     field :created_at, type: DateTime
     field :id, type: Integer
 
-    increments :id, seed: 0, scope: -> { PaperTrail.config.mongo_prefix.is_a?(Proc) ? PaperTrail.config.mongo_prefix.call : 'paper_trail' }
+    increments :id, seed: 0, scope: -> { PaperTrail::Version.prefix_map }
 
     class << self
       def reset
@@ -34,6 +31,10 @@ module PaperTrail
 
       def find(id)
         find_by(id: id)
+      end
+
+      def prefix_map
+        (PaperTrail.config.mongo_prefix.is_a?(Proc) ? PaperTrail.config.mongo_prefix.call : 'paper_trail') || 'paper_trail'
       end
     end
 
