@@ -62,7 +62,6 @@ module PaperTrail
       def nonskipped_attributes_before_change(is_touch)
         cache_changed_attributes do
           record_attributes = @record.attributes.except(*@record.paper_trail_options[:skip])
-
           record_attributes.each_key do |k|
             if @record.class.column_names.include?(k)
               record_attributes[k] = attribute_in_previous_version(k, is_touch)
@@ -98,7 +97,7 @@ module PaperTrail
             @record.attribute_before_last_save(attr_name.to_s)
           else
             # We are either performing a `record_destroy` or a
-            # `record_update(is_touch: true)`.
+            # `record_update(is_touch: true)
             @record.attribute_in_database(attr_name.to_s)
           end
         else
