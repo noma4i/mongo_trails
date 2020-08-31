@@ -24,6 +24,16 @@ module PaperTrail
 
     increments :integer_id, scope: -> { PaperTrail::Version.prefix_map }
 
+    def save_version!
+      PaperTrail.config.enable_sidekiq ? async_save! : save
+    end
+
+    def async_save!
+      worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : WriteVersionWorker
+
+      worker.perform_async(attributes)
+    end
+
     class << self
       def reset
         Mongoid::QueryCache.clear_cache

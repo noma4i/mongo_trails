@@ -144,6 +144,7 @@ if defined?(::Rails)
 
   if defined?(::Rails.application)
     require "mongo_trails/frameworks/rails"
+    require "mongo_trails/mongo_support/write_version_worker"
   else
     ::Kernel.warn(::PaperTrail::E_RAILS_NOT_LOADED)
   end
