@@ -2,7 +2,7 @@
 
 # PaperTrail to MongoDB storage
 
-##Drop-in Replacement for PaperTrail
+## Drop-in Replacement for PaperTrail
 
 Based on paper-trail gem `v10.3.1`. All future versions will follow version of the parent Paper Trail gem.
 
