@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 require 'sidekiq'
-require "mongo_trails/write_version_worker"
+require 'mongo_trails/write_version_worker'
 
 module PaperTrail
   # Configures an ActiveRecord model, mostly at application boot time, but also
@@ -48,7 +48,7 @@ module PaperTrail
          @model_class.after_create { |r|
           event = PaperTrail::Events::Create.new(r, true)
           data = event.data.merge!({ item_id: r.id, item_type: r.class.name }).except(:item)
-          ::WriteVersionWorker.perform_async(data) if r.paper_trail.save_version?
+          ::PaperTrail.sidekiq_worker.perform_async(data) if r.paper_trail.save_version?
         }
       else
         @model_class.after_create { |r|
@@ -77,7 +77,7 @@ module PaperTrail
           lambda do  |r|
             event = PaperTrail::Events::Destroy.new(r, true)
             data = event.data.merge!({ item_id: r.id, item_type: r.class.name }).except(:item)
-            ::WriteVersionWorker.perform_async(data) if r.paper_trail.save_version?
+            ::PaperTrail.sidekiq_worker.perform_async(data) if r.paper_trail.save_version?
           end
         )
       else
@@ -98,12 +98,11 @@ module PaperTrail
     #
     # @api public
     def on_update
-      p 'sdfadsfsafs' +  ::PaperTrail.enable_sidekiq?.inspect
       if ::PaperTrail.enable_sidekiq?
         @model_class.after_update { |r|
           event = PaperTrail::Events::Update.new(r, true, false, nil)
           data = event.data.merge!({ item_id: r.id, item_type: r.class.name }).except(:item)
-          ::WriteVersionWorker.perform_async(data)
+          ::PaperTrail.sidekiq_worker.perform_async(data) if r.paper_trail.save_version?
         }
       else
         @model_class.before_save { |r|
@@ -133,7 +132,7 @@ module PaperTrail
         @model_class.after_touch { |r|
           event = PaperTrail::Events::Update.new(r, true, true, nil)
           data = event.data.merge!({ item_id: r.id, item_type: r.class.name }).except(:item)
-          ::WriteVersionWorker.perform_async(data)
+          ::PaperTrail.sidekiq_worker.perform_async(data)
         }
       else
         @model_class.after_touch { |r|

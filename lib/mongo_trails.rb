@@ -26,6 +26,7 @@ require "mongo_trails/version_concern"
 require "mongo_trails/version_number"
 require "mongo_trails/serializers/json"
 require "mongo_trails/serializers/yaml"
+require 'mongo_trails/write_version_worker'
 
 # An ActiveRecord extension that tracks changes to your models, for auditing or
 # versioning.
@@ -116,6 +117,18 @@ module PaperTrail
 
     def enable_sidekiq=(value)
       PaperTrail.config.enable_sidekiq = value
+    end
+
+    def sidekiq_worker
+      class_name = PaperTrail.config.sidekiq_worker
+      return PaperTrail.config.sidekiq_worker.constantize if class_valid(class_name, 'perform_async')
+      WriteVersionWorker
+    end
+
+    def class_valid(class_name, method)
+      return nil unless Object.const_defined?(class_name)
+      c = Object.const_get(class_name)
+      c.respond_to?(method) ? true : false
     end
 
     # Returns PaperTrail's global configuration object, a singleton. These
