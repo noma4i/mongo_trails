@@ -8,6 +8,9 @@ class WriteVersionWorker
   end
 end
 
+class UnknownWorker
+end
+
 class SidekiqIntegrationTest < Minitest::Test
   def setup
     Mongoid.purge!
@@ -43,11 +46,14 @@ class SidekiqIntegrationTest < Minitest::Test
     assert_equal 21, @user.versions.count
   end
 
+  # Fallback from poorly defined worker to a built-in
   def test_sidekiq_poor_definition
     PaperTrail.config.enable_sidekiq = true
     PaperTrail.config.sidekiq_worker = UnknownWorker
     seed_records
-    assert_equal 0, WriteVersionWorker.jobs.size
+    assert_equal 21, PaperTrail::WriteVersionWorker.jobs.size
+
+    Sidekiq::Worker.drain_all
 
     assert_equal 21, @user.versions.count
   end
