@@ -14,7 +14,7 @@ module PaperTrail
     store_in collection: ->() { "#{PaperTrail::Version.prefix_map}_versions" }
 
     field :item_type, type: String
-    field :item_id, type: Integer
+    field :item_id, type: String
     field :event, type: String
     field :whodunnit, type: String
     field :object, type: Hash
