@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require 'sidekiq'
+require "mongo_trails/write_version_worker"
 
 module PaperTrail
   # Configures an ActiveRecord model, mostly at application boot time, but also
@@ -42,9 +44,17 @@ module PaperTrail
     #
     # @api public
     def on_create
-      @model_class.after_create { |r|
-        r.paper_trail.record_create if r.paper_trail.save_version?
-      }
+      if ::PaperTrail.enable_sidekiq?
+         @model_class.after_create { |r|
+          event = PaperTrail::Events::Create.new(r, true)
+          data = event.data.merge!({ item_id: r.id, item_type: r.class.name }).except(:item)
+          ::WriteVersionWorker.perform_async(data) if r.paper_trail.save_version?
+        }
+      else
+        @model_class.after_create { |r|
+          r.paper_trail.record_create if r.paper_trail.save_version?
+        }
+      end
       return if @model_class.paper_trail_options[:on].include?(:create)
       @model_class.paper_trail_options[:on] << :create
     end
@@ -61,13 +71,24 @@ module PaperTrail
         raise E_CANNOT_RECORD_AFTER_DESTROY
       end
 
-      @model_class.send(
-        "#{recording_order}_destroy",
-        lambda do |r|
-          return unless r.paper_trail.save_version?
-          r.paper_trail.record_destroy(recording_order)
-        end
-      )
+      if ::PaperTrail.enable_sidekiq?
+        @model_class.send(
+          "#{recording_order}_destroy",
+          lambda do  |r|
+            event = PaperTrail::Events::Destroy.new(r, true)
+            data = event.data.merge!({ item_id: r.id, item_type: r.class.name }).except(:item)
+            ::WriteVersionWorker.perform_async(data) if r.paper_trail.save_version?
+          end
+        )
+      else
+        @model_class.send(
+          "#{recording_order}_destroy",
+          lambda do |r|
+            return unless r.paper_trail.save_version?
+            r.paper_trail.record_destroy(recording_order)
+          end
+        )
+      end
 
       return if @model_class.paper_trail_options[:on].include?(:destroy)
       @model_class.paper_trail_options[:on] << :destroy
@@ -77,21 +98,30 @@ module PaperTrail
     #
     # @api public
     def on_update
-      @model_class.before_save { |r|
-        r.paper_trail.reset_timestamp_attrs_for_update_if_needed
-      }
-      @model_class.after_update { |r|
-        if r.paper_trail.save_version?
-          r.paper_trail.record_update(
-            force: false,
-            in_after_callback: true,
-            is_touch: false
-          )
-        end
-      }
-      @model_class.after_update { |r|
-        r.paper_trail.clear_version_instance
-      }
+      p 'sdfadsfsafs' +  ::PaperTrail.enable_sidekiq?.inspect
+      if ::PaperTrail.enable_sidekiq?
+        @model_class.after_update { |r|
+          event = PaperTrail::Events::Update.new(r, true, false, nil)
+          data = event.data.merge!({ item_id: r.id, item_type: r.class.name }).except(:item)
+          ::WriteVersionWorker.perform_async(data)
+        }
+      else
+        @model_class.before_save { |r|
+          r.paper_trail.reset_timestamp_attrs_for_update_if_needed
+        }
+        @model_class.after_update { |r|
+          if r.paper_trail.save_version?
+            r.paper_trail.record_update(
+              force: false,
+              in_after_callback: true,
+              is_touch: false
+            )
+          end
+        }
+        @model_class.after_update { |r|
+          r.paper_trail.clear_version_instance
+        }
+      end
       return if @model_class.paper_trail_options[:on].include?(:update)
       @model_class.paper_trail_options[:on] << :update
     end
@@ -99,13 +129,21 @@ module PaperTrail
     # Adds a callback that records a version after a "touch" event.
     # @api public
     def on_touch
-      @model_class.after_touch { |r|
-        r.paper_trail.record_update(
-          force: true,
-          in_after_callback: true,
-          is_touch: true
-        )
-      }
+      if ::PaperTrail.enable_sidekiq?
+        @model_class.after_touch { |r|
+          event = PaperTrail::Events::Update.new(r, true, true, nil)
+          data = event.data.merge!({ item_id: r.id, item_type: r.class.name }).except(:item)
+          ::WriteVersionWorker.perform_async(data)
+        }
+      else
+        @model_class.after_touch { |r|
+          r.paper_trail.record_update(
+            force: true,
+            in_after_callback: true,
+            is_touch: true
+          )
+        }
+      end
     end
 
     # Set up `@model_class` for PaperTrail. Installs callbacks, associations,

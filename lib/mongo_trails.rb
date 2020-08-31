@@ -110,6 +110,14 @@ module PaperTrail
       PaperTrail.config.serializer
     end
 
+    def enable_sidekiq?
+      PaperTrail.config.enable_sidekiq
+    end
+
+    def enable_sidekiq=(value)
+      PaperTrail.config.enable_sidekiq = value
+    end
+
     # Returns PaperTrail's global configuration object, a singleton. These
     # settings affect all threads.
     # @api private

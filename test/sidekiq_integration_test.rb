@@ -1,11 +1,7 @@
-require 'test_helper'
+require_relative 'test_helper'
+require 'mongo_trails/write_version_worker'
 
-class WriteVersionWorker
-  include Sidekiq::Worker
-
-  def perform(obj)
-    PaperTrail::Version.new(obj).save
-  end
+class UnknownWorker
 end
 
 class SidekiqIntegrationTest < Minitest::Test
@@ -14,6 +10,7 @@ class SidekiqIntegrationTest < Minitest::Test
     WriteVersionWorker.clear
     User.delete_all
     PaperTrail.request.whodunnit = 'Andy Stewart'
+    PaperTrail.config.enable_sidekiq = true
   end
 
   def seed_records
@@ -47,7 +44,9 @@ class SidekiqIntegrationTest < Minitest::Test
     PaperTrail.config.enable_sidekiq = true
     PaperTrail.config.sidekiq_worker = UnknownWorker
     seed_records
-    assert_equal 0, WriteVersionWorker.jobs.size
+    assert_equal 21, WriteVersionWorker.jobs.size
+
+    Sidekiq::Worker.drain_all
 
     assert_equal 21, @user.versions.count
   end
