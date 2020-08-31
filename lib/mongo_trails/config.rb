@@ -16,7 +16,10 @@ module PaperTrail
       :version_limit,
       :has_paper_trail_defaults,
       :mongo_config,
-      :mongo_prefix
+      :mongo_prefix,
+      :enable_sidekiq,
+      :sidekiq_worker,
+      :sidekiq_options
     )
 
     def initialize
@@ -27,6 +30,8 @@ module PaperTrail
       # Variables which affect all threads, whose access is *not* synchronized.
       @serializer = PaperTrail::Serializers::YAML
       @has_paper_trail_defaults = {}
+      @enable_sidekiq = false
+      @sidekiq_options = { queue: :default, retry: true, backtrace: false }
     end
 
     # Indicates whether PaperTrail is on or off. Default: true.

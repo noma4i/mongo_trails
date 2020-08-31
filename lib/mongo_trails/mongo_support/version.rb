@@ -1,6 +1,13 @@
 require "mongoid"
 require "autoinc"
 
+begin
+  require 'sidekiq'
+  require "mongo_trails/mongo_support/write_version_worker"
+rescue LoadError
+  # Continue without Sidekiq
+end
+
 class AutoIncrementCounters
   include Mongoid::Document
 end
@@ -23,6 +30,24 @@ module PaperTrail
     field :integer_id, type: Integer
 
     increments :integer_id, scope: -> { PaperTrail::Version.prefix_map }
+
+    def save_version
+      defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save
+    end
+
+    def save_version!
+      defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save!
+    end
+
+    def async_save!
+      worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : PaperTrail::WriteVersionWorker
+
+      if worker == PaperTrail::WriteVersionWorker
+        worker.set(PaperTrail.config.sidekiq_options).perform_async(attributes)
+      else
+        worker.perform_async(attributes)
+      end
+    end
 
     class << self
       def reset

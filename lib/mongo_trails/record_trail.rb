@@ -73,7 +73,7 @@ module PaperTrail
       return unless enabled?
 
       build_version_on_create(in_after_callback: true).tap do |version|
-        version.save!
+        version.save_version!
         # Because the version object was created using version_class.new instead
         # of versions_assoc.build?, the association cache is unaware. So, we
         # invalidate the `versions` association cache with `reset`.
@@ -93,6 +93,7 @@ module PaperTrail
     # @api private
     # @return - The created version object, so that plugins can use it, e.g.
     # paper_trail-association_tracking
+
     def record_destroy(recording_order)
       return unless enabled? && !@record.new_record?
       in_after_callback = recording_order == "after"
@@ -102,13 +103,7 @@ module PaperTrail
       # `data_for_destroy` but PT-AT still does.
       data = event.data.merge(data_for_destroy)
 
-      version = @record.class.paper_trail.version_class.create(data)
-      if version.errors.any?
-        log_version_errors(version, :destroy)
-      else
-        assign_and_reset_version_association(version)
-        version
-      end
+      @record.class.paper_trail.version_class.new(data).save_version
     end
 
     # PT-AT extends this method to add its transaction id.
@@ -131,7 +126,7 @@ module PaperTrail
       )
       return unless version
 
-      if version.save
+      if version.save_version
         # Because the version object was created using version_class.new instead
         # of versions_assoc.build?, the association cache is unaware. So, we
         # invalidate the `versions` association cache with `reset`.
@@ -161,12 +156,8 @@ module PaperTrail
       data = event.data.merge(data_for_update_columns)
 
       versions_assoc = @record.send(@record.class.versions_association_name)
-      version = versions_assoc.create(data)
-      if version.errors.any?
-        log_version_errors(version, :update)
-      else
-        version
-      end
+
+      versions_assoc.new(data).save_version
     end
 
     # PT-AT extends this method to add its transaction id.

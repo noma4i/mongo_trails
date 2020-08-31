@@ -2,6 +2,8 @@ require 'test_helper'
 
 class BasicIntegrationTest < Minitest::Test
   def setup
+    PaperTrail.config.enable_sidekiq = false
+
     [User, Comment].map(&:delete_all)
     Mongoid.purge!
 
