@@ -26,6 +26,7 @@ require "mongo_trails/version_concern"
 require "mongo_trails/version_number"
 require "mongo_trails/serializers/json"
 require "mongo_trails/serializers/yaml"
+require "mongo_trails/mongo_support/write_version_worker"
 
 # An ActiveRecord extension that tracks changes to your models, for auditing or
 # versioning.
@@ -144,7 +145,6 @@ if defined?(::Rails)
 
   if defined?(::Rails.application)
     require "mongo_trails/frameworks/rails"
-    require "mongo_trails/mongo_support/write_version_worker"
   else
     ::Kernel.warn(::PaperTrail::E_RAILS_NOT_LOADED)
   end

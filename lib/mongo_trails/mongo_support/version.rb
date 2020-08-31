@@ -29,7 +29,7 @@ module PaperTrail
     end
 
     def async_save!
-      worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : WriteVersionWorker
+      worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : PaperTrail::WriteVersionWorker
 
       worker.perform_async(attributes)
     end
