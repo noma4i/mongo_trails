@@ -31,6 +31,11 @@ module PaperTrail
 
     increments :integer_id, scope: -> { PaperTrail::Version.prefix_map }
 
+    index({ integer_id: 1 }, { unique: true, background: PaperTrail.config.mongo_index_backgroud })
+    index({ created_at: 1 }, { unique: true, background: PaperTrail.config.mongo_index_backgroud })
+    index({ item_type: 1 }, { unique: true, background: PaperTrail.config.mongo_index_backgroud })
+    index({ item_id: 1 }, { unique: true, background: PaperTrail.config.mongo_index_backgroud })
+
     def save_version
       defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save
     end
