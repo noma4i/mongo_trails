@@ -1,9 +1,12 @@
+# frozen_string_literal: true
+
 require "mongoid"
 require "autoinc"
 
 begin
   require 'sidekiq'
   require "mongo_trails/mongo_support/write_version_worker"
+  require "mongo_trails/mongo_support/criteria"
 rescue LoadError
   # Continue without Sidekiq
 end
@@ -14,6 +17,40 @@ end
 
 module PaperTrail
   class Version
+    class << self
+      def find(id)
+        find_by(integer_id: id)
+      end
+
+      def prefix_map
+        (PaperTrail.config.mongo_prefix.is_a?(Proc) && PaperTrail.config.mongo_prefix.call) || 'paper_trail'
+      end
+
+      def table_name
+      end
+
+      def abstract_class?
+        false
+      end
+
+      def columns_hash
+        fields
+      end
+
+      def column_names
+        fields.keys
+      end
+
+      def belongs_to(name, args)
+      end
+
+      def validates_presence_of(name)
+      end
+
+      def after_create(name)
+      end
+    end
+
     include PaperTrail::VersionConcern
     include Mongoid::Document
     include Mongoid::Autoinc
@@ -28,6 +65,9 @@ module PaperTrail
     field :object_changes, type: Hash
     field :created_at, type: DateTime
     field :integer_id, type: Integer
+    field :locale, type: String
+
+    index({ item_type: -1, item_id: -1 }, { background: true })
 
     increments :integer_id, scope: -> { PaperTrail::Version.prefix_map }
 
@@ -49,20 +89,6 @@ module PaperTrail
       end
     end
 
-    class << self
-      def reset
-        Mongoid::QueryCache.clear_cache
-      end
-
-      def find(id)
-        find_by(integer_id: id)
-      end
-
-      def prefix_map
-        (PaperTrail.config.mongo_prefix.is_a?(Proc) ? PaperTrail.config.mongo_prefix.call : 'paper_trail') || 'paper_trail'
-      end
-    end
-
     def initialize(data)
       item = data.delete(:item)
       if item.present?
@@ -76,6 +102,42 @@ module PaperTrail
 
     def item
       item_type.constantize.find(item_id)
+    end
+
+    def class_name
+      self.class.name
+    end
+
+    def field_changes
+      changeset&.keys
+    end
+
+    def object=(value)
+      super(escape_value(value))
+    end
+
+    def object
+      unescape_value(super)
+    end
+
+    def object_changes
+      unescape_value(super)
+    end
+
+    def object_changes=(value)
+      super(escape_value(value))
+    end
+
+    def unescape_value(value)
+      value&.deep_transform_keys { |key| URI.unescape(key) }
+    end
+
+    def escape_value(value)
+      value&.deep_transform_keys { |key| URI.escape(key.to_s, /[$.]/) }
+    end
+
+    def safe_whodunnit
+      PaperTrails::SafeWhodunnit.call(whodunnit: whodunnit)
     end
   end
 end
