@@ -2,11 +2,17 @@
 
 # PaperTrail to MongoDB storage
 
-## Addon for PaperTrail
+## Drop-in Replacement for PaperTrail
+
+Based on paper-trail gem `v10.3.1`. All future versions will follow version of the parent Paper Trail gem.
 
 Track changes to your models, for auditing or versioning. See how a model looked
 at any stage in its lifecycle, revert it to any version, or restore it after it
 has been destroyed.
+
+|  PaperTrail | MongoTrails  |
+|---          |---           |
+|  v10.3.*    |   v10.3.1    |
 
 ## Limitations
 - `PaperTrail-AssociationTracking` are not supported in full.
@@ -41,3 +47,10 @@ Done!
 `PaperTrail.config.enable_sidekiq = false` - Enable Sidekiq to proccess versions
 `PaperTrail.config.sidekiq_worker = PaperTrail::WriteVersionWorker` - Worker class
 `PaperTrail.config.sidekiq_options = { queue: :default }` - Options for Sidekiq
+
+
+## Using Rspec
+
+`require 'mongo_trails/frameworks/rspec'`
+
+API is the same as `paper_trail`
