@@ -4,11 +4,11 @@ $LOAD_PATH.unshift File.expand_path("lib", __dir__)
 
 Gem::Specification.new do |s|
   s.name = "mongo_trails"
-  s.version = "1.0"
+  s.version = "2.0"
   s.platform = Gem::Platform::RUBY
-  s.summary = "PaperTrail DropIn replacement to store versions in MongoDB"
+  s.summary = "PaperTrail addon to store versions in MongoDB"
   s.description = <<-EOS
-PaperTrail DropIn replacement to store version in MongoDB
+PaperTrail addon to store versions in MongoDB
   EOS
   s.homepage = "https://github.com/noma4i/mongo_trails"
   s.metadata['homepage_uri'] = s.homepage
