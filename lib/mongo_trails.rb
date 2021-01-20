@@ -4,6 +4,7 @@ require "paper_trail"
 require "mongo_trails/config"
 require "mongo_trails/model_config"
 require "mongo_trails/version_concern"
+require "mongo_trails/record_trail"
 
 ActiveSupport.on_load(:active_record) do
   require "mongo_trails/mongo_support/version"
