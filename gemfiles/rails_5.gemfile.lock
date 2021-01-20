@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    mongo_trails (11.0)
+    mongo_trails (2.0)
       mongoid (< 8)
       mongoid-autoinc (< 7)
       paper_trail (< 12)
