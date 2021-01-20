@@ -80,16 +80,6 @@ module MongoTrails
       defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save!
     end
 
-    def async_save!
-      worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : PaperTrail::WriteVersionWorker
-
-      if worker == PaperTrail::WriteVersionWorker
-        worker.set(PaperTrail.config.sidekiq_options).perform_async(attributes)
-      else
-        worker.perform_async(attributes)
-      end
-    end
-
     def initialize(data)
       item = data.delete(:item)
       if item.present?
@@ -127,6 +117,18 @@ module MongoTrails
 
     def escape_value(value)
       value&.deep_transform_keys { |key| URI.escape(key.to_s, /[$.]/) }
+    end
+
+    private
+
+    def async_save!
+      worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : PaperTrail::WriteVersionWorker
+
+      if worker == PaperTrail::WriteVersionWorker
+        worker.set(PaperTrail.config.sidekiq_options).perform_async(attributes)
+      else
+        worker.perform_async(attributes)
+      end
     end
   end
 end
