@@ -65,6 +65,7 @@ module PaperTrail
     field :object_changes, type: Hash
     field :created_at, type: DateTime
     field :integer_id, type: Integer
+    field :locale, type: String
 
     index({ item_type: -1, item_id: -1 }, { background: true })
 
@@ -103,6 +104,14 @@ module PaperTrail
       item_type.constantize.find(item_id)
     end
 
+    def class_name
+      self.class.name
+    end
+
+    def field_changes
+      changeset&.keys
+    end
+
     def object=(value)
       super(escape_value(value))
     end
@@ -125,6 +134,10 @@ module PaperTrail
 
     def escape_value(value)
       value&.deep_transform_keys { |key| URI.escape(key.to_s, /[$.]/) }
+    end
+
+    def safe_whodunnit
+      PaperTrails::SafeWhodunnit.call(whodunnit: whodunnit)
     end
   end
 end
