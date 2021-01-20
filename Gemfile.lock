@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mongo_trails (1.0)
+    mongo_trails (2.0)
       mongoid (< 8)
       mongoid-autoinc (< 7)
       paper_trail (< 12)
@@ -25,7 +25,7 @@ GEM
       rake
       thor (>= 0.14.0)
     bson (4.11.1)
-    concurrent-ruby (1.1.7)
+    concurrent-ruby (1.1.8)
     connection_pool (2.2.3)
     i18n (1.8.7)
       concurrent-ruby (~> 1.0)
