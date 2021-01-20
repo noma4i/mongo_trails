@@ -33,12 +33,12 @@ class BasicIntegrationTest < Minitest::Test
   end
 
   def test_version_next_restore
-    MongoTrails::Version.find(1).next.reify.save!
+    PaperTrail::Version.find(1).next.reify.save!
     assert_equal 'Bob', User.first.name
   end
 
   def test_version_previous_restore
-    MongoTrails::Version.find(3).previous.reify.save!
+    PaperTrail::Version.find(3).previous.reify.save!
 
     assert_equal 'Bob', User.first.name
   end

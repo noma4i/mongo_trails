@@ -15,9 +15,7 @@ class AutoIncrementCounters
   include Mongoid::Document
 end
 
-PaperTrail.config.has_paper_trail_defaults = { versions: { class_name: 'MongoTrails::Version' } }
-
-module MongoTrails
+module PaperTrail
   class Version
     class << self
       def find(id)
@@ -57,7 +55,7 @@ module MongoTrails
     include Mongoid::Document
     include Mongoid::Autoinc
 
-    store_in collection: ->() { "#{MongoTrails::Version.prefix_map}_versions" }
+    store_in collection: ->() { "#{PaperTrail::Version.prefix_map}_versions" }
 
     field :item_type, type: String
     field :item_id, type: String
@@ -70,7 +68,7 @@ module MongoTrails
 
     index({ item_type: -1, item_id: -1 }, { background: true })
 
-    increments :integer_id, scope: -> { MongoTrails::Version.prefix_map }
+    increments :integer_id, scope: -> { PaperTrail::Version.prefix_map }
 
     def save_version
       defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save

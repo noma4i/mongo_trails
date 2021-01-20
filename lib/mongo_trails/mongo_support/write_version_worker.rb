@@ -5,7 +5,7 @@ module PaperTrail
     include Sidekiq::Worker
 
     def perform(obj)
-      MongoTrails::Version.new(obj).save!
+      PaperTrail::Version.new(obj).save!
     end
   end
 end
