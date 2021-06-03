@@ -4,7 +4,7 @@ class WriteVersionWorker
   include Sidekiq::Worker
 
   def perform(obj)
-    PaperTrail::Version.new(obj).save
+    MongoTrails::Version.new(obj).save
   end
 end
 

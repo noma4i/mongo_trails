@@ -2,16 +2,13 @@
 
 $LOAD_PATH.unshift File.expand_path("lib", __dir__)
 
-require "mongo_trails/compatibility"
-require "mongo_trails/version_number"
-
 Gem::Specification.new do |s|
   s.name = "mongo_trails"
-  s.version = PaperTrail::VERSION::STRING
+  s.version = "11.0"
   s.platform = Gem::Platform::RUBY
-  s.summary = "PaperTrail DropIn replacement to store versions in MongoDB"
+  s.summary = "PaperTrail addon to store versions in MongoDB"
   s.description = <<-EOS
-PaperTrail DropIn replacement to store version in MongoDB
+PaperTrail addon to store versions in MongoDB
   EOS
   s.homepage = "https://github.com/noma4i/mongo_trails"
   s.metadata['homepage_uri'] = s.homepage
@@ -28,8 +25,7 @@ PaperTrail DropIn replacement to store version in MongoDB
   s.executables   = s.files.grep(%r{^exe/}) { |f| File.basename(f) }
   s.require_paths = ['lib']
 
-  s.add_dependency "activerecord", ::PaperTrail::Compatibility::ACTIVERECORD_GTE
-  s.add_dependency "request_store", "~> 1.1"
+  s.add_dependency "paper_trail", "< 12"
   s.add_dependency "mongoid", "< 8"
   s.add_dependency "mongoid-autoinc", "< 7"
 
