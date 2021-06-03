@@ -112,11 +112,13 @@ module MongoTrails
     end
 
     def unescape_value(value)
-      value&.deep_transform_keys { |key| URI.unescape(key) }
+      parser = URI::Parser.new
+      value&.deep_transform_keys { |key| parser.unescape(key) }
     end
 
     def escape_value(value)
-      value&.deep_transform_keys { |key| URI.escape(key.to_s, /[$.]/) }
+      parser = URI::Parser.new
+      value&.deep_transform_keys { |key| parser.escape(key.to_s, /[$.]/) }
     end
 
     private
