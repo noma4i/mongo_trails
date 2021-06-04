@@ -112,16 +112,18 @@ module MongoTrails
     end
 
     def unescape_value(value)
-      parser = URI::Parser.new
       value&.deep_transform_keys { |key| parser.unescape(key) }
     end
 
     def escape_value(value)
-      parser = URI::Parser.new
       value&.deep_transform_keys { |key| parser.escape(key.to_s, /[$.]/) }
     end
 
     private
+
+    def parser
+      @parser ||= URI::Parser.new
+    end
 
     def async_save!
       worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : PaperTrail::WriteVersionWorker
