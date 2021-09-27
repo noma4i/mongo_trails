@@ -4,6 +4,8 @@ module PaperTrail
       return unless enabled?
 
       build_version_on_create(in_after_callback: true).tap do |version|
+        return if exceeds_record_size_limit?(version)
+
         version.save_version!
       end
     end
@@ -26,7 +28,7 @@ module PaperTrail
         in_after_callback: in_after_callback,
         is_touch: is_touch
       )
-      return unless version
+      return unless version && !exceeds_record_size_limit?(version)
 
       version.save_version
     end
@@ -37,8 +39,16 @@ module PaperTrail
       event = Events::Update.new(@record, false, false, changes)
       data = event.data.merge(data_for_update_columns)
       versions_assoc = @record.send(@record.class.versions_association_name)
+      version = versions_assoc.new(data)
+      return if exceeds_record_size_limit?(version)
 
-      versions_assoc.new(data).save_version
+      version.new(data).save_version
+    end
+
+    private
+
+    def exceeds_record_size_limit?(version)
+      PaperTrail.config.mongo_trails_config&.dig(:record_size_limit).to_i < version.to_json.to_s.bytesize
     end
   end
 end

@@ -7,7 +7,8 @@ module PaperTrail
       :mongo_prefix,
       :enable_sidekiq,
       :sidekiq_worker,
-      :sidekiq_options
+      :sidekiq_options,
+      :mongo_trails_config
     )
 
     def initialize
