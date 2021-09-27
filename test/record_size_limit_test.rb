@@ -8,7 +8,7 @@ class RecordSizeLimit < Minitest::Test
   def setup
     PaperTrail.config.enable_sidekiq = false
     PaperTrail.config.mongo_trails_config = { record_size_limit: record_size_limit }
-    [User, Comment].map(&:delete_all)
+    User.delete_all
     Mongoid.purge!
     PaperTrail.request.whodunnit = 'Andy Stewart'
   end

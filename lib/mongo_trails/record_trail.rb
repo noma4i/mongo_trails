@@ -48,7 +48,8 @@ module PaperTrail
     private
 
     def exceeds_record_size_limit?(version)
-      PaperTrail.config.mongo_trails_config&.dig(:record_size_limit).to_i < version.to_json.to_s.bytesize
+      size_limit = PaperTrail.config.mongo_trails_config&.dig(:record_size_limit)
+      size_limit && size_limit.to_i < version.to_json.to_s.bytesize
     end
   end
 end
