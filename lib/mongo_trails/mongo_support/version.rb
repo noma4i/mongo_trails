@@ -92,7 +92,7 @@ module MongoTrails
     end
 
     def item
-      item_type.constantize.find(item_id)
+      item_type.constantize.find_by(id: item_id)
     end
 
     def object=(value)
