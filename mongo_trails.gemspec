@@ -13,7 +13,7 @@ PaperTrail addon to store versions in MongoDB
   s.homepage = "https://github.com/noma4i/mongo_trails"
   s.metadata['homepage_uri'] = s.homepage
   s.metadata['source_code_uri'] = s.homepage
-  s.authors = ["Alex Tsirel","Ivan Romanyuk"]
+  s.authors = ["Alex Tsirel", "Ivan Romanyuk"]
   s.email = ["noma4i@gmail.com"]
   s.license = "MIT"
 
@@ -25,7 +25,7 @@ PaperTrail addon to store versions in MongoDB
   s.executables   = s.files.grep(%r{^exe/}) { |f| File.basename(f) }
   s.require_paths = ['lib']
 
-  s.add_dependency "paper_trail", "< 12"
+  s.add_dependency "paper_trail", "< 13"
   s.add_dependency "mongoid", "< 8"
   s.add_dependency "mongoid-autoinc", "< 7"
   s.add_dependency "sidekiq", ">= 6.5", "~> 7.0"
