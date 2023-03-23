@@ -1,5 +1,6 @@
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 $VERBOSE=nil
+require 'active_record'
 require 'mongo_trails'
 
 require 'bundler/setup'
