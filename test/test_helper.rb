@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
-$VERBOSE=nil
+$VERBOSE = nil
 require 'active_record'
 require 'mongo_trails'
 
@@ -17,12 +19,18 @@ module SidekiqMinitestSupport
   end
 end
 
-class MiniTest::Spec
-  include SidekiqMinitestSupport
+module MiniTest
+  class Spec
+    include SidekiqMinitestSupport
+  end
 end
 
-class MiniTest::Unit::TestCase
-  include SidekiqMinitestSupport
+module MiniTest
+  class Unit
+    class TestCase
+      include SidekiqMinitestSupport
+    end
+  end
 end
 
 ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
@@ -56,6 +64,3 @@ class User < ActiveRecord::Base
 
   has_paper_trail
 end
-
-
-

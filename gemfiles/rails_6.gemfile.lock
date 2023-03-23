@@ -4,7 +4,7 @@ PATH
     mongo_trails (11.1)
       mongoid (< 8)
       mongoid-autoinc (< 7)
-      paper_trail (< 12)
+      paper_trail (< 13)
 
 GEM
   remote: https://rubygems.org/
@@ -24,11 +24,13 @@ GEM
       bundler
       rake
       thor (>= 0.14.0)
+    ast (2.4.2)
     bson (4.12.1)
     concurrent-ruby (1.1.7)
     connection_pool (2.2.3)
     i18n (1.8.5)
       concurrent-ruby (~> 1.0)
+    json (2.6.3)
     minitest (5.14.1)
     mongo (2.16.0)
       bson (>= 4.8.2, < 5.0.0)
@@ -41,11 +43,30 @@ GEM
     paper_trail (11.1.0)
       activerecord (>= 5.2)
       request_store (~> 1.1)
+    parallel (1.22.1)
+    parser (3.2.1.1)
+      ast (~> 2.4.1)
     rack (2.2.3)
-    rake (12.3.3)
+    rainbow (3.1.1)
+    rake (13.0.6)
     redis (4.2.1)
+    regexp_parser (2.7.0)
     request_store (1.5.0)
       rack (>= 1.4)
+    rexml (3.2.5)
+    rubocop (1.48.1)
+      json (~> 2.3)
+      parallel (~> 1.10)
+      parser (>= 3.2.0.0)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 1.8, < 3.0)
+      rexml (>= 3.2.5, < 4.0)
+      rubocop-ast (>= 1.26.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 2.4.0, < 3.0)
+    rubocop-ast (1.27.0)
+      parser (>= 3.2.1.0)
+    ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
     sidekiq (6.1.1)
       connection_pool (>= 2.2.2)
@@ -56,6 +77,7 @@ GEM
     thread_safe (0.3.6)
     tzinfo (1.2.7)
       thread_safe (~> 0.1)
+    unicode-display_width (2.4.2)
     zeitwerk (2.4.0)
 
 PLATFORMS
@@ -66,9 +88,10 @@ DEPENDENCIES
   appraisal (~> 2.3)
   minitest (~> 5.0)
   mongo_trails!
-  rake (~> 12.0)
+  rake (~> 13.0)
+  rubocop
   sidekiq (< 7)
   sqlite3 (~> 1.4)
 
 BUNDLED WITH
-   1.17.3
+   2.4.8
