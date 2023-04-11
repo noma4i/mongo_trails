@@ -28,7 +28,7 @@ PaperTrail addon to store versions in MongoDB
   s.add_dependency "paper_trail", "< 12"
   s.add_dependency "mongoid", "< 8"
   s.add_dependency "mongoid-autoinc", "< 7"
-  s.add_dependency "sidekiq", "~> 6.5"
+  s.add_dependency "sidekiq", ">= 6.5", "~> 7.0"
 
   s.add_development_dependency "sqlite3", "~> 1.4"
   s.add_development_dependency "appraisal", "~> 2.3"
