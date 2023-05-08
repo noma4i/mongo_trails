@@ -33,5 +33,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'appraisal', '~> 2.3'
   s.add_development_dependency 'sidekiq', '< 7'
   s.add_development_dependency 'sqlite3', '~> 1.4'
-  s.required_ruby_version = '>= 2.7.7'
+  s.required_ruby_version = '>= 2.7'
 end
