@@ -42,7 +42,7 @@ module PaperTrail
       version = versions_assoc.new(data)
       return if exceeds_record_size_limit?(version)
 
-      version.new(data).save_version
+      version.save_version
     end
 
     private
