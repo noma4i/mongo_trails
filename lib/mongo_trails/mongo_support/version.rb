@@ -123,11 +123,11 @@ module MongoTrails
 
     def async_save!
       worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : PaperTrail::WriteVersionWorker
-
+      args = attributes.as_json
       if worker == PaperTrail::WriteVersionWorker
-        worker.set(PaperTrail.config.sidekiq_options).perform_async(attributes)
+        worker.set(PaperTrail.config.sidekiq_options).perform_async(args)
       else
-        worker.perform_async(attributes)
+        worker.perform_async(args)
       end
     end
   end
