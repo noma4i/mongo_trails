@@ -118,7 +118,7 @@ module MongoTrails
     private
 
     def force_utf8(value)
-      value.dup.force_encoding('UTF-8') if value.respond_to?(:force_encoding)
+      value.respond_to?(:force_encoding) ? value.dup.force_encoding('UTF-8') : value
     end
 
     def parser
