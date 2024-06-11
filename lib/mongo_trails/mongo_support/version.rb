@@ -108,14 +108,18 @@ module MongoTrails
     end
 
     def unescape_value(value)
-      value&.deep_transform_keys { |key| parser.unescape(key) }
+      value&.deep_transform_keys { |key| parser.unescape(force_utf8(key)) }
     end
 
     def escape_value(value)
-      value&.deep_transform_keys { |key| parser.escape(key.to_s, /[$.]/) }
+      value&.deep_transform_keys { |key| parser.escape(force_utf8(key.to_s), /[$.]/) }
     end
 
     private
+
+    def force_utf8(value)
+      value.dup.force_encoding('UTF-8') if value.respond_to?(:force_encoding)
+    end
 
     def parser
       @parser ||= URI::Parser.new
