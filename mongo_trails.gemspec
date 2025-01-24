@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'mongoid', '< 8'
   s.add_dependency 'mongoid-autoinc', '< 7'
-  s.add_dependency 'paper_trail', '< 13'
+  s.add_dependency 'paper_trail', '~> 16'
   s.add_dependency 'sidekiq', '>= 6.5', '~> 7.0'
 
   s.add_development_dependency 'appraisal', '~> 2.3'
