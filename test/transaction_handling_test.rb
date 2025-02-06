@@ -21,6 +21,24 @@ class TransactionHandlingTest < Minitest::Test
     assert_equal 2, user.versions.count
   end
 
+  def test_on_update_many_versions_for_many_updates
+    user = User.create!(name: 'John Doe')
+    assert_equal 1, user.versions.count
+
+    ActiveRecord::Base.transaction do
+      user.update!(name: 'Arnold Schwarzenegger')
+      user.update!(title: 'Governor')
+      user.update!(name: 'Jackie Chan')
+    end
+
+    assert_equal 4, user.versions.count
+    assert_equal({ 'name' => ['John Doe', 'Arnold Schwarzenegger'] },
+                 user.versions.where(event: 'update')[0].object_changes)
+    assert_equal({ 'title' => [nil, 'Governor'] }, user.versions.where(event: 'update')[1].object_changes)
+    assert_equal({ 'name' => ['Arnold Schwarzenegger', 'Jackie Chan'] },
+                 user.versions.where(event: 'update')[2].object_changes)
+  end
+
   def test_on_update_does_not_create_version_if_transaction_not_completed
     user = User.create!(name: 'John Doe')
     assert_equal 1, user.versions.count
@@ -32,7 +50,6 @@ class TransactionHandlingTest < Minitest::Test
 
     assert_equal 1, user.versions.count
   end
-
 
   def test_on_create_creates_version_if_transaction_completed
     assert_equal 0, MongoTrails::Version.count

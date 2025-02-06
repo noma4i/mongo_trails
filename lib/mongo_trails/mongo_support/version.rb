@@ -2,6 +2,7 @@
 
 require 'mongoid'
 require 'autoinc'
+require 'after_commit_everywhere'
 
 begin
   require 'sidekiq'
@@ -52,6 +53,7 @@ module MongoTrails
     include PaperTrail::VersionConcern
     include Mongoid::Document
     include Mongoid::Autoinc
+    include AfterCommitEverywhere
 
     store_in collection: -> { "#{MongoTrails::Version.prefix_map}_versions" }
 
@@ -69,11 +71,15 @@ module MongoTrails
     increments :integer_id, scope: -> { MongoTrails::Version.prefix_map }
 
     def save_version
-      defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save
+      after_commit do
+        defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save
+      end
     end
 
     def save_version!
-      defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save!
+      after_commit do
+        defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save!
+      end
     end
 
     def initialize(data)
