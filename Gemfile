@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in ar_shard.gemspec
 gemspec
 
+gem 'after_commit_everywhere'
 gem 'minitest', '~> 5.0'
 gem 'rake', '~> 13.0'
 gem 'rubocop', require: false

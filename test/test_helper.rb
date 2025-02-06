@@ -48,6 +48,7 @@ require 'mongo_trails/mongo_support/config'
 ActiveRecord::Schema.define do
   create_table :users, force: true do |t|
     t.string :name
+    t.string :title
   end
 
   create_table :comments, force: true do |t|
