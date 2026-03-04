@@ -71,13 +71,13 @@ module MongoTrails
     increments :integer_id, scope: -> { MongoTrails::Version.prefix_map }
 
     def save_version
-      after_commit do
+      after_commit(prepend: true) do
         defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save
       end
     end
 
     def save_version!
-      after_commit do
+      after_commit(prepend: true) do
         defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save!
       end
     end
