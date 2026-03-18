@@ -6,6 +6,7 @@ require 'paper_trail/model_config'
 require 'paper_trail/record_trail'
 
 require 'mongo_trails/config'
+require 'mongo_trails/events/base'
 require 'mongo_trails/model_config'
 require 'mongo_trails/version_concern'
 require 'mongo_trails/record_trail'
