@@ -2,7 +2,7 @@
 
 require 'mongoid'
 require 'autoinc'
-require 'after_commit_everywhere'
+require 'mongo_trails/mongo_support/version_commit_wrap'
 
 begin
   require 'sidekiq'
@@ -53,7 +53,6 @@ module MongoTrails
     include PaperTrail::VersionConcern
     include Mongoid::Document
     include Mongoid::Autoinc
-    include AfterCommitEverywhere
 
     store_in collection: -> { "#{MongoTrails::Version.prefix_map}_versions" }
 
@@ -71,15 +70,13 @@ module MongoTrails
     increments :integer_id, scope: -> { MongoTrails::Version.prefix_map }
 
     def save_version
-      after_commit(**after_commit_options) do
-        defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save
-      end
+      version = self
+      VersionCommitWrap.new { defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? version.send(:async_save!) : version.save }.add_to_transaction
     end
 
     def save_version!
-      after_commit(**after_commit_options) do
-        defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save!
-      end
+      version = self
+      VersionCommitWrap.new { defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? version.send(:async_save!) : version.save! }.add_to_transaction
     end
 
     def initialize(data)
@@ -122,10 +119,6 @@ module MongoTrails
     end
 
     private
-
-    def after_commit_options
-      defined?(Rails) && Rails::VERSION::MAJOR >= 8 ? {} : { prepend: true }
-    end
 
     def force_utf8(value)
       value.respond_to?(:force_encoding) ? value.dup.force_encoding('UTF-8') : value

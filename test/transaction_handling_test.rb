@@ -95,4 +95,49 @@ class TransactionHandlingTest < Minitest::Test
 
     assert_equal 1, user.versions.count
   end
+
+  def test_version_saved_even_when_other_after_commit_raises
+    user = User.create!(name: 'John Doe')
+    assert_equal 1, user.versions.count
+
+    User.after_commit { raise 'boom from other callback' }
+
+    assert_raises(RuntimeError) do
+      ActiveRecord::Base.transaction do
+        user.update!(name: 'Arnold Schwarzenegger')
+      end
+    end
+
+    assert_equal 2, user.versions.count
+  ensure
+    User.reset_callbacks(:commit)
+  end
+
+  def test_all_versions_saved_when_callback_raises_mid_transaction
+    user = User.create!(name: 'John Doe')
+    assert_equal 1, user.versions.count
+
+    User.after_commit { raise 'boom from other callback' }
+
+    assert_raises(RuntimeError) do
+      ActiveRecord::Base.transaction do
+        user.update!(name: 'Arnold Schwarzenegger')
+        user.update!(title: 'Governor')
+        user.update!(name: 'Jackie Chan')
+        user.update!(title: 'Actor')
+        user.update!(name: 'Bruce Lee')
+      end
+    end
+
+    versions = user.versions.where(event: 'update').to_a
+    assert_equal 5, versions.count
+
+    assert_equal({ 'name' => ['John Doe', 'Arnold Schwarzenegger'] }, versions[0].object_changes)
+    assert_equal({ 'title' => [nil, 'Governor'] }, versions[1].object_changes)
+    assert_equal({ 'name' => ['Arnold Schwarzenegger', 'Jackie Chan'] }, versions[2].object_changes)
+    assert_equal({ 'title' => ['Governor', 'Actor'] }, versions[3].object_changes)
+    assert_equal({ 'name' => ['Jackie Chan', 'Bruce Lee'] }, versions[4].object_changes)
+  ensure
+    User.reset_callbacks(:commit)
+  end
 end
