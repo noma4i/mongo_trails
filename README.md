@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/noma4i/mongo_trails.svg?branch=master)](https://travis-ci.com/noma4i/mongo_trails)
+[![CI](https://github.com/noma4i/mongo_trails/actions/workflows/test.yml/badge.svg)](https://github.com/noma4i/mongo_trails/actions/workflows/test.yml)
 
 # PaperTrail to MongoDB storage
 
@@ -9,6 +9,7 @@ at any stage in its lifecycle, revert it to any version, or restore it after it
 has been destroyed.
 
 ## Limitations
+
 - `PaperTrail-AssociationTracking` are not supported in full.
 
 ## How to Use
