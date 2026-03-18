@@ -25,13 +25,13 @@ Gem::Specification.new do |s|
   s.executables   = s.files.grep(%r{^exe/}) { |f| File.basename(f) }
   s.require_paths = ['lib']
 
-  s.add_dependency 'mongoid', '< 8'
-  s.add_dependency 'mongoid-autoinc', '< 7'
+  s.add_dependency 'mongoid', '>= 7', '< 10'
+  s.add_dependency 'mongoid-autoinc', '>= 6', '< 8'
   s.add_dependency 'paper_trail', '~> 16'
   s.add_dependency 'sidekiq', '>= 6.5', '~> 7.0'
 
   s.add_development_dependency 'appraisal', '~> 2.3'
   s.add_development_dependency 'sidekiq', '~> 7'
-  s.add_development_dependency 'sqlite3', '~> 1.4'
+  s.add_development_dependency 'sqlite3'
   s.required_ruby_version = '>= 3.2'
 end
