@@ -71,13 +71,13 @@ module MongoTrails
     increments :integer_id, scope: -> { MongoTrails::Version.prefix_map }
 
     def save_version
-      after_commit do
+      after_commit(**after_commit_options) do
         defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save
       end
     end
 
     def save_version!
-      after_commit do
+      after_commit(**after_commit_options) do
         defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save!
       end
     end
@@ -122,6 +122,10 @@ module MongoTrails
     end
 
     private
+
+    def after_commit_options
+      defined?(Rails) && Rails::VERSION::MAJOR >= 8 ? {} : { prepend: true }
+    end
 
     def force_utf8(value)
       value.respond_to?(:force_encoding) ? value.dup.force_encoding('UTF-8') : value
