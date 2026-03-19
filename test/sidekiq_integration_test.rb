@@ -1,7 +1,11 @@
+# frozen_string_literal: true
+
 require 'test_helper'
 
+Sidekiq.strict_args!(:warn)
+
 class WriteVersionWorker
-  include Sidekiq::Worker
+  include Sidekiq::Job
 
   def perform(obj)
     MongoTrails::Version.new(obj).save
@@ -32,7 +36,7 @@ class SidekiqIntegrationTest < Minitest::Test
     seed_records
     assert_equal 21, WriteVersionWorker.jobs.size
 
-    Sidekiq::Worker.drain_all
+    Sidekiq::Job.drain_all
 
     assert_equal 21, @user.versions.count
   end
@@ -56,7 +60,7 @@ class SidekiqIntegrationTest < Minitest::Test
     assert_equal 21, PaperTrail::WriteVersionWorker.jobs.size
     assert_equal 'another', PaperTrail::WriteVersionWorker.jobs.last['queue']
 
-    Sidekiq::Worker.drain_all
+    Sidekiq::Job.drain_all
 
     assert_equal 21, @user.versions.count
   end

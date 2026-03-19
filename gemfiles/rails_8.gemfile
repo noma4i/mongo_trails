@@ -2,9 +2,10 @@
 
 source "https://rubygems.org"
 
+gem "after_commit_everywhere"
 gem "minitest", "~> 5.0"
 gem "rake", "~> 13.0"
 gem "rubocop", require: false
-gem "activerecord", "~> 5.0"
+gem "activerecord", "~> 8.0"
 
 gemspec path: "../"

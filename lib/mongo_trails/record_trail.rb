@@ -13,11 +13,14 @@ module PaperTrail
     def record_destroy(recording_order)
       return unless enabled? && !@record.new_record?
 
-      in_after_callback = recording_order == "after"
+      in_after_callback = recording_order == 'after'
       event = Events::Destroy.new(@record, in_after_callback)
       data = event.data.merge(data_for_destroy)
 
-      @record.class.paper_trail.version_class.new(data).save_version
+      version = @record.class.paper_trail.version_class.new(data)
+      return if exceeds_record_size_limit?(version)
+
+      version.save_version
     end
 
     def record_update(force:, in_after_callback:, is_touch:)
@@ -42,7 +45,7 @@ module PaperTrail
       version = versions_assoc.new(data)
       return if exceeds_record_size_limit?(version)
 
-      version.new(data).save_version
+      version.save_version
     end
 
     private

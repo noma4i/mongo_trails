@@ -1,5 +1,9 @@
+# frozen_string_literal: true
+
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
-$VERBOSE=nil
+$VERBOSE = nil
+require 'logger'
+require 'active_record'
 require 'mongo_trails'
 
 require 'bundler/setup'
@@ -11,17 +15,23 @@ require 'sidekiq/testing'
 
 module SidekiqMinitestSupport
   def after_teardown
-    Sidekiq::Worker.clear_all
+    Sidekiq::Job.clear_all
     super
   end
 end
 
-class MiniTest::Spec
-  include SidekiqMinitestSupport
+module MiniTest
+  class Spec
+    include SidekiqMinitestSupport
+  end
 end
 
-class MiniTest::Unit::TestCase
-  include SidekiqMinitestSupport
+module MiniTest
+  class Unit
+    class TestCase
+      include SidekiqMinitestSupport
+    end
+  end
 end
 
 ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
@@ -38,6 +48,7 @@ require 'mongo_trails/mongo_support/config'
 ActiveRecord::Schema.define do
   create_table :users, force: true do |t|
     t.string :name
+    t.string :title
   end
 
   create_table :comments, force: true do |t|
@@ -55,6 +66,3 @@ class User < ActiveRecord::Base
 
   has_paper_trail
 end
-
-
-

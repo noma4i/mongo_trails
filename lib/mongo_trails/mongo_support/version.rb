@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
-require "mongoid"
-require "autoinc"
+require 'mongoid'
+require 'autoinc'
+require 'mongo_trails/mongo_support/version_commit_wrap'
 
 begin
   require 'sidekiq'
-  require "mongo_trails/mongo_support/write_version_worker"
-  require "mongo_trails/mongo_support/criteria"
+  require 'mongo_trails/mongo_support/write_version_worker'
+  require 'mongo_trails/mongo_support/criteria'
 rescue LoadError
   # Continue without Sidekiq
 end
@@ -28,8 +29,7 @@ module MongoTrails
         (PaperTrail.config.mongo_prefix.is_a?(Proc) && PaperTrail.config.mongo_prefix.call) || 'paper_trail'
       end
 
-      def table_name
-      end
+      def table_name; end
 
       def abstract_class?
         false
@@ -43,21 +43,18 @@ module MongoTrails
         fields.keys
       end
 
-      def belongs_to(name, args)
-      end
+      def belongs_to(_name, _options = {}, &block); end
 
-      def validates_presence_of(name)
-      end
+      def validates_presence_of(_name); end
 
-      def after_create(name)
-      end
+      def after_create(_name); end
     end
 
     include PaperTrail::VersionConcern
     include Mongoid::Document
     include Mongoid::Autoinc
 
-    store_in collection: ->() { "#{MongoTrails::Version.prefix_map}_versions" }
+    store_in collection: -> { "#{MongoTrails::Version.prefix_map}_versions" }
 
     field :item_type, type: String
     field :item_id, type: String
@@ -73,11 +70,13 @@ module MongoTrails
     increments :integer_id, scope: -> { MongoTrails::Version.prefix_map }
 
     def save_version
-      defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save
+      version = self
+      VersionCommitWrap.new { defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? version.send(:async_save!) : version.save }.add_to_transaction
     end
 
     def save_version!
-      defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? async_save! : save!
+      version = self
+      VersionCommitWrap.new { defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? version.send(:async_save!) : version.save! }.add_to_transaction
     end
 
     def initialize(data)
@@ -112,14 +111,18 @@ module MongoTrails
     end
 
     def unescape_value(value)
-      value&.deep_transform_keys { |key| parser.unescape(key) }
+      value&.deep_transform_keys { |key| parser.unescape(force_utf8(key)) }
     end
 
     def escape_value(value)
-      value&.deep_transform_keys { |key| parser.escape(key.to_s, /[$.]/) }
+      value&.deep_transform_keys { |key| parser.escape(force_utf8(key.to_s), /[$.]/) }
     end
 
     private
+
+    def force_utf8(value)
+      value.respond_to?(:force_encoding) ? value.dup.force_encoding('UTF-8') : value
+    end
 
     def parser
       @parser ||= URI::Parser.new
@@ -127,11 +130,11 @@ module MongoTrails
 
     def async_save!
       worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : PaperTrail::WriteVersionWorker
-
+      args = attributes.as_json
       if worker == PaperTrail::WriteVersionWorker
-        worker.set(PaperTrail.config.sidekiq_options).perform_async(attributes)
+        worker.set(PaperTrail.config.sidekiq_options).perform_async(args)
       else
-        worker.perform_async(attributes)
+        worker.perform_async(args)
       end
     end
   end
