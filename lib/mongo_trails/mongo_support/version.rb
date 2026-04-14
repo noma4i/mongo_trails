@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'mongoid'
-require 'autoinc'
 require 'time'
 require 'mongo_trails/mongo_support/version_commit_wrap'
 
@@ -44,13 +43,27 @@ module MongoTrails
       end
 
       def next_integer_id
-        counter = AutoIncrementCounters.collection.find(_id: "#{name}:#{prefix_map}").find_one_and_update(
-          { '$inc' => { sequence: 1 } },
+        next_integer_ids(1).first
+      end
+
+      def next_integer_ids(count, scope: prefix_map)
+        return [] if count.to_i <= 0
+
+        counter = AutoIncrementCounters.collection.find(_id: counter_key(scope)).find_one_and_update(
+          { '$inc' => { sequence: count } },
           upsert: true,
           return_document: :after
         )
+        max_integer_id = counter.fetch('sequence')
 
-        counter.fetch('sequence')
+        ((max_integer_id - count + 1)..max_integer_id).to_a
+      end
+
+      def bulk_insert_attributes(version)
+        version = version.is_a?(self) ? version : new(version)
+        attrs = version.attributes.dup
+        attrs.delete('_id') if attrs['_id'].nil?
+        attrs
       end
 
       def table_name; end
@@ -72,6 +85,12 @@ module MongoTrails
       def validates_presence_of(_name); end
 
       def after_create(_name); end
+
+      private
+
+      def counter_key(scope)
+        "#{name}:#{scope || prefix_map}"
+      end
     end
 
     include PaperTrail::VersionConcern
