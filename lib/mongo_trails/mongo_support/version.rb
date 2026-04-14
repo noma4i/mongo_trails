@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'mongoid'
-require 'autoinc'
 require 'time'
 require 'mongo_trails/mongo_support/version_commit_wrap'
 
