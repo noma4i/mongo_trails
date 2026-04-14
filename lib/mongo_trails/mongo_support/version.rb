@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'mongoid'
-require 'autoinc'
+require 'time'
 require 'mongo_trails/mongo_support/version_commit_wrap'
 
 begin
@@ -14,6 +14,10 @@ end
 
 class AutoIncrementCounters
   include Mongoid::Document
+
+  store_in collection: 'auto_increment_counters'
+
+  field :sequence, type: Integer, default: 0
 end
 
 PaperTrail.config.has_paper_trail_defaults = { versions: { class_name: 'MongoTrails::Version' } }
@@ -27,6 +31,16 @@ module MongoTrails
 
       def prefix_map
         (PaperTrail.config.mongo_prefix.is_a?(Proc) && PaperTrail.config.mongo_prefix.call) || 'paper_trail'
+      end
+
+      def next_integer_id
+        counter = AutoIncrementCounters.collection.find(_id: "#{name}:#{prefix_map}").find_one_and_update(
+          { '$inc' => { sequence: 1 } },
+          upsert: true,
+          return_document: :after
+        )
+
+        counter.fetch('sequence')
       end
 
       def table_name; end
@@ -52,7 +66,6 @@ module MongoTrails
 
     include PaperTrail::VersionConcern
     include Mongoid::Document
-    include Mongoid::Autoinc
 
     store_in collection: -> { "#{MongoTrails::Version.prefix_map}_versions" }
 
@@ -67,25 +80,26 @@ module MongoTrails
 
     index({ item_type: -1, item_id: -1 }, { background: true })
 
-    increments :integer_id, scope: -> { MongoTrails::Version.prefix_map }
+    before_create :assign_integer_id
 
     def save_version
       version = self
-      VersionCommitWrap.new { defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? version.send(:async_save!) : version.save }.add_to_transaction
+      VersionCommitWrap.new { persist_version(version) }.add_to_transaction
     end
 
     def save_version!
       version = self
-      VersionCommitWrap.new { defined?(Sidekiq) && PaperTrail.config.enable_sidekiq ? version.send(:async_save!) : version.save! }.add_to_transaction
+      VersionCommitWrap.new { persist_version(version, bang: true) }.add_to_transaction
     end
 
     def initialize(data)
+      data = data.to_h.deep_symbolize_keys
       item = data.delete(:item)
       if item.present?
         data[:item_type] = item.class.name
         data[:item_id] = item.id
       end
-      data[:created_at] = Time.zone&.now || Time.now
+      data[:created_at] = normalize_created_at(data[:created_at])
 
       super
     end
@@ -119,6 +133,41 @@ module MongoTrails
     end
 
     private
+
+    def assign_integer_id
+      self.integer_id ||= self.class.next_integer_id
+    end
+
+    def normalize_created_at(value)
+      return value if value.is_a?(Time) || value.is_a?(DateTime)
+      return current_time if value.nil?
+
+      parse_time(value)
+    rescue ArgumentError
+      current_time
+    end
+
+    def persist_version(version, bang: false)
+      return version.send(:async_save!) if sidekiq_enabled?
+
+      bang ? version.save! : version.save
+    end
+
+    def parse_time(value)
+      time_zone&.parse(value.to_s) || Time.parse(value.to_s)
+    end
+
+    def current_time
+      time_zone&.now || Time.now
+    end
+
+    def time_zone
+      Time.zone
+    end
+
+    def sidekiq_enabled?
+      defined?(Sidekiq) && PaperTrail.config.enable_sidekiq
+    end
 
     def force_utf8(value)
       value.respond_to?(:force_encoding) ? value.dup.force_encoding('UTF-8') : value

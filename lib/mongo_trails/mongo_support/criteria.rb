@@ -2,7 +2,6 @@
 
 module Mongoid
   class Criteria
-    def reset
-    end
+    def reset; end
   end
 end

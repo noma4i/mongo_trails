@@ -135,7 +135,7 @@ class TransactionHandlingTest < Minitest::Test
     assert_equal({ 'name' => ['John Doe', 'Arnold Schwarzenegger'] }, versions[0].object_changes)
     assert_equal({ 'title' => [nil, 'Governor'] }, versions[1].object_changes)
     assert_equal({ 'name' => ['Arnold Schwarzenegger', 'Jackie Chan'] }, versions[2].object_changes)
-    assert_equal({ 'title' => ['Governor', 'Actor'] }, versions[3].object_changes)
+    assert_equal({ 'title' => %w[Governor Actor] }, versions[3].object_changes)
     assert_equal({ 'name' => ['Jackie Chan', 'Bruce Lee'] }, versions[4].object_changes)
   ensure
     User.reset_callbacks(:commit)

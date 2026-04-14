@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class PaperTrailEventsBaseTest < Minitest::Test
   class DummyRecord
@@ -20,25 +22,22 @@ class PaperTrailEventsBaseTest < Minitest::Test
   def test_removes_changes_where_array_contains_identical_hashes
     record = DummyRecord.new(
       changes: {
-        "data" => [{"a" => 1}, {"a" => 1}],
-        "name" => ["old", "new"]
+        'data' => [{ 'a' => 1 }, { 'a' => 1 }],
+        'name' => %w[old new]
       },
       saved_changes: {}
     )
 
     event = build_event(record: record, after_callback: false)
-
-    $test = true
     result = event.send(:load_changes_in_latest_version)
-    $test = false
 
-    assert_equal({"name" => ["old", "new"]}, result)
+    assert_equal({ 'name' => %w[old new] }, result)
   end
 
   def test_keeps_changes_when_hashes_differ
     record = DummyRecord.new(
       changes: {
-        "data" => [{"a" => 1}, {"a" => 2}]
+        'data' => [{ 'a' => 1 }, { 'a' => 2 }]
       },
       saved_changes: {}
     )
@@ -47,16 +46,16 @@ class PaperTrailEventsBaseTest < Minitest::Test
 
     result = event.send(:load_changes_in_latest_version)
 
-    assert_equal({"data" => [{"a" => 1}, {"a" => 2}]}, result)
+    assert_equal({ 'data' => [{ 'a' => 1 }, { 'a' => 2 }] }, result)
   end
 
   def test_uses_saved_changes_when_in_after_callback
     record = DummyRecord.new(
       changes: {
-        "name" => ["old", "new"]
+        'name' => %w[old new]
       },
       saved_changes: {
-        "title" => ["a", "b"]
+        'title' => %w[a b]
       }
     )
 
@@ -64,6 +63,6 @@ class PaperTrailEventsBaseTest < Minitest::Test
 
     result = event.send(:load_changes_in_latest_version)
 
-    assert_equal({"title" => ["a", "b"]}, result)
+    assert_equal({ 'title' => %w[a b] }, result)
   end
 end

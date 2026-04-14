@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module MongoTrails
   class VersionCommitWrap
     def initialize(&callback)
@@ -19,7 +21,7 @@ module MongoTrails
       @executed = true
     end
 
-    def committed!(should_run_callbacks: true) # rubocop:disable Lint/UnusedMethodArgument
+    def committed!(**)
       return if @executed
 
       @executed = true

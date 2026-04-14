@@ -1,11 +1,13 @@
-appraise 'rails-5' do
-  gem 'activerecord', '~> 5.0'
-end
-
-appraise 'rails-6' do
-  gem 'activerecord', '~> 6.0'
-end
+# frozen_string_literal: true
 
 appraise 'rails-7' do
-  gem 'activerecord', '~> 7.0'
+  gem 'activerecord', '~> 7.1'
+end
+
+appraise 'rails-8' do
+  gem 'activerecord', '~> 8.0'
+end
+
+appraise 'rails-8-1' do
+  gem 'activerecord', '~> 8.1'
 end
