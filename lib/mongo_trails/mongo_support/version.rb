@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'mongoid'
+require 'autoinc'
 require 'time'
 require 'mongo_trails/mongo_support/version_commit_wrap'
 
@@ -27,6 +28,15 @@ module MongoTrails
     class << self
       def find(id)
         find_by(integer_id: id)
+      end
+
+      def incrementing_fields
+        @incrementing_fields ||= {
+          integer_id: {
+            scope: -> { MongoTrails::Version.prefix_map },
+            step: 1
+          }
+        }
       end
 
       def prefix_map
