@@ -22,7 +22,7 @@ class VersionTest < Minitest::Test
     assert_equal [4, 5], MongoTrails::Version.next_integer_ids(2)
   end
 
-  def test_bulk_insert_attributes_omits_nil_id
+  def test_bulk_insert_attributes_preserves_insertable_attributes
     attrs = MongoTrails::Version.bulk_insert_attributes(
       item_type: 'User',
       item_id: '1',
@@ -30,7 +30,7 @@ class VersionTest < Minitest::Test
       integer_id: 10
     )
 
-    assert_nil attrs['_id']
+    refute_nil attrs['_id']
     assert_equal 10, attrs['integer_id']
     assert_equal 'User', attrs['item_type']
   end
