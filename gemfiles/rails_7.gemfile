@@ -8,7 +8,6 @@ gem 'activerecord', '~> 7.1'
 gem 'after_commit_everywhere'
 gem 'appraisal', '~> 2.3'
 gem 'minitest', '~> 5.0'
-gem 'mongoid-autoinc', '>= 6', '< 8'
 gem 'rake', '~> 13.0'
 gem 'rubocop', require: false
 gem 'sqlite3', '~> 2.9'

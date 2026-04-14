@@ -16,4 +16,22 @@ class VersionTest < Minitest::Test
     assert_equal 'test', MongoTrails::Version.new({}).instance_exec(&scope)
     assert_equal 1, MongoTrails::Version.incrementing_fields.dig(:integer_id, :step)
   end
+
+  def test_next_integer_ids_returns_sequential_ids
+    assert_equal [1, 2, 3], MongoTrails::Version.next_integer_ids(3)
+    assert_equal [4, 5], MongoTrails::Version.next_integer_ids(2)
+  end
+
+  def test_bulk_insert_attributes_omits_nil_id
+    attrs = MongoTrails::Version.bulk_insert_attributes(
+      item_type: 'User',
+      item_id: '1',
+      event: 'create',
+      integer_id: 10
+    )
+
+    refute attrs.key?('_id')
+    assert_equal 10, attrs['integer_id']
+    assert_equal 'User', attrs['item_type']
+  end
 end
