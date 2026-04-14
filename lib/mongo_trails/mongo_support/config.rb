@@ -8,4 +8,8 @@ Mongoid.configure do |config|
   config.log_level = :error
 end
 
-Mongoid::QueryCache.enabled = false
+if defined?(Mongo::QueryCache)
+  Mongo::QueryCache.enabled = false
+elsif defined?(Mongoid::QueryCache)
+  Mongoid::QueryCache.enabled = false
+end

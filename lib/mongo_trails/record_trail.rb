@@ -1,13 +1,14 @@
+# frozen_string_literal: true
+
 module PaperTrail
   class RecordTrail
     def record_create
       return unless enabled?
 
-      build_version_on_create(in_after_callback: true).tap do |version|
-        return if exceeds_record_size_limit?(version)
+      version = build_version_on_create(in_after_callback: true)
+      return if exceeds_record_size_limit?(version)
 
-        version.save_version!
-      end
+      version.save_version!
     end
 
     def record_destroy(recording_order)
