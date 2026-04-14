@@ -65,6 +65,8 @@ GEM
       concurrent-ruby (>= 1.0.5, < 2.0)
       mongo (>= 2.18.0, < 3.0.0)
       ruby2_keywords (~> 0.0.5)
+    mongoid-autoinc (6.0.4)
+      mongoid (>= 6.0, < 9.0)
     paper_trail (16.0.0)
       activerecord (>= 6.1)
       request_store (~> 1.4)
@@ -144,6 +146,7 @@ DEPENDENCIES
   appraisal (~> 2.3)
   minitest (~> 5.0)
   mongo_trails!
+  mongoid-autoinc (>= 6, < 8)
   rake (~> 13.0)
   rubocop
   sqlite3 (~> 2.9)
@@ -174,6 +177,7 @@ CHECKSUMS
   mongo (2.23.0) sha256=be2fe4cc6f7119fa6b79e82a1963b2406856b4dc92d0ccfb74db543897be3109
   mongo_trails (13.0.0)
   mongoid (8.1.12) sha256=c3f9ff2a6b5369544fd1b78ac23fe3ab05347f81a88d89b68ecf41747d0855c7
+  mongoid-autoinc (6.0.4) sha256=3f555bd6cfd7a45d1ea44a0b618b01bb68701426ada487a2e806901e51c8c5a4
   paper_trail (16.0.0) sha256=e9b9f0fb1b8b590c8231cfa931b282ba92f90e066e393930a5e1c61ae4c5019d
   parallel (1.27.0) sha256=4ac151e1806b755fb4e2dc2332cbf0e54f2e24ba821ff2d3dcf86bf6dc4ae130
   parser (3.3.10.2) sha256=6f60c84aa4bdcedb6d1a2434b738fe8a8136807b6adc8f7f53b97da9bc4e9357
