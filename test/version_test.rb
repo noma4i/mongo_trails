@@ -30,7 +30,7 @@ class VersionTest < Minitest::Test
       integer_id: 10
     )
 
-    refute attrs.key?('_id')
+    assert_nil attrs['_id']
     assert_equal 10, attrs['integer_id']
     assert_equal 'User', attrs['item_type']
   end
