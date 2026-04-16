@@ -96,17 +96,15 @@ module MongoTrails
       end
 
       def ensure_counter_initialized(counter_id, _scope)
-        # Check if counter already exists
         existing_counter = AutoIncrementCounters.collection.find(_id: counter_id).first
         return if existing_counter.present?
 
-        # Bootstrap from existing max integer_id in versions collection
-        max_id = Version.collection.aggregate([
+        pipeline = [
           { '$match' => {} },
           { '$group' => { _id: nil, max_integer_id: { '$max' => '$integer_id' } } }
-        ]).first&.dig('max_integer_id').to_i
+        ]
+        max_id = Version.collection.aggregate(pipeline).first&.dig('max_integer_id').to_i
 
-        # Initialize counter to max_id to preserve continuity
         AutoIncrementCounters.collection.find(_id: counter_id).find_one_and_update(
           { '$set' => { sequence: max_id } },
           upsert: true,
@@ -208,13 +206,8 @@ module MongoTrails
       time_zone&.parse(value.to_s) || Time.parse(value.to_s)
     end
 
-    def current_time
-      time_zone&.now || Time.now
-    end
-
-    def time_zone
-      Time.zone
-    end
+    def current_time = time_zone&.now || Time.now
+    def time_zone = Time.zone
 
     def sidekiq_enabled?
       defined?(Sidekiq) && PaperTrail.config.enable_sidekiq
