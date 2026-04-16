@@ -34,4 +34,16 @@ class VersionTest < Minitest::Test
     assert_equal 10, attrs['integer_id']
     assert_equal 'User', attrs['item_type']
   end
+
+  def test_next_integer_ids_preserves_continuity_from_existing_versions
+    user = User.create!(name: 'John Doe')
+    user.update!(name: 'Jane Doe')
+
+    AutoIncrementCounters.collection.delete_many({})
+    max_existing_id = MongoTrails::Version.max(:integer_id)
+    next_ids = MongoTrails::Version.next_integer_ids(2)
+
+    assert_equal max_existing_id + 1, next_ids[0]
+    assert_equal max_existing_id + 2, next_ids[1]
+  end
 end

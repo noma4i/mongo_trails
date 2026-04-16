@@ -49,7 +49,10 @@ module MongoTrails
       def next_integer_ids(count, scope: prefix_map)
         return [] if count.to_i <= 0
 
-        counter = AutoIncrementCounters.collection.find(_id: counter_key(scope)).find_one_and_update(
+        counter_id = counter_key(scope)
+        ensure_counter_initialized(counter_id, scope)
+
+        counter = AutoIncrementCounters.collection.find(_id: counter_id).find_one_and_update(
           { '$inc' => { sequence: count } },
           upsert: true,
           return_document: :after
@@ -90,6 +93,25 @@ module MongoTrails
 
       def counter_key(scope)
         "#{name}:#{scope || prefix_map}"
+      end
+
+      def ensure_counter_initialized(counter_id, _scope)
+        # Check if counter already exists
+        existing_counter = AutoIncrementCounters.collection.find(_id: counter_id).first
+        return if existing_counter.present?
+
+        # Bootstrap from existing max integer_id in versions collection
+        max_id = Version.collection.aggregate([
+          { '$match' => {} },
+          { '$group' => { _id: nil, max_integer_id: { '$max' => '$integer_id' } } }
+        ]).first&.dig('max_integer_id').to_i
+
+        # Initialize counter to max_id to preserve continuity
+        AutoIncrementCounters.collection.find(_id: counter_id).find_one_and_update(
+          { '$set' => { sequence: max_id } },
+          upsert: true,
+          return_document: :after
+        )
       end
     end
 
