@@ -4,7 +4,7 @@ $LOAD_PATH.unshift File.expand_path('lib', __dir__)
 
 Gem::Specification.new do |s|
   s.name = 'mongo_trails'
-  s.version = '13.0.0'
+  s.version = '13.1.0'
   s.platform = Gem::Platform::RUBY
   s.summary = 'PaperTrail addon to store versions in MongoDB'
   s.description = <<~DSC
