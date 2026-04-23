@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    mongo_trails (13.0.0)
+    mongo_trails (13.1.0)
       mongoid (>= 7, < 10)
       paper_trail (~> 16)
       sidekiq (>= 6.5, < 9)
@@ -137,4 +137,4 @@ DEPENDENCIES
   sqlite3 (~> 2.9)
 
 BUNDLED WITH
-   2.7.2
+  4.0.1
