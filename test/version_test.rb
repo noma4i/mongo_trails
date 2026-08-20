@@ -3,6 +3,14 @@
 require 'test_helper'
 
 class VersionTest < Minitest::Test
+  def test_gemspec_uses_the_gem_version
+    gemspec = Gem::Specification.load(File.expand_path('../mongo_trails.gemspec', __dir__))
+
+    assert_equal MongoTrails::VERSION, gemspec.version.to_s
+    assert_equal 'https://rubygems.org', gemspec.metadata['allowed_push_host']
+    assert_equal 'true', gemspec.metadata['rubygems_mfa_required']
+  end
+
   def setup
     PaperTrail.config.enable_sidekiq = false
     [User, Comment].map(&:delete_all)

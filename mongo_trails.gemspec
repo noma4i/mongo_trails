@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 $LOAD_PATH.unshift File.expand_path('lib', __dir__)
+require 'mongo_trails/version'
 
 Gem::Specification.new do |s|
   s.name = 'mongo_trails'
-  s.version = '13.1.0'
+  s.version = MongoTrails::VERSION
   s.platform = Gem::Platform::RUBY
   s.summary = 'PaperTrail addon to store versions in MongoDB'
   s.description = <<~DSC
@@ -13,6 +14,8 @@ Gem::Specification.new do |s|
   s.homepage = 'https://github.com/noma4i/mongo_trails'
   s.metadata['homepage_uri'] = s.homepage
   s.metadata['source_code_uri'] = s.homepage
+  s.metadata['allowed_push_host'] = 'https://rubygems.org'
+  s.metadata['rubygems_mfa_required'] = 'true'
   s.authors = ['Alex Tsirel', 'Ivan Romanyuk']
   s.email = ['noma4i@gmail.com']
   s.license = 'MIT'

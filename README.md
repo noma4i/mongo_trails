@@ -42,3 +42,16 @@ Done!
 `PaperTrail.config.enable_sidekiq = false` - Enable Sidekiq to proccess versions
 `PaperTrail.config.sidekiq_worker = PaperTrail::WriteVersionWorker` - Worker class
 `PaperTrail.config.sidekiq_options = { queue: :default }` - Options for Sidekiq
+
+## Releasing
+
+Update `MongoTrails::VERSION` in `lib/mongo_trails/version.rb` using semantic versioning, commit the change, and run:
+
+```bash
+bundle exec rake test
+bundle exec rubocop
+bundle exec rake release:validate
+bundle exec rake release
+```
+
+The Bundler release task builds the gem, creates and pushes the `vVERSION` Git tag, and publishes to RubyGems.org. Publishing requires RubyGems credentials with MFA; the gemspec rejects other push hosts.
