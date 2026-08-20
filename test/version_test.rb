@@ -46,4 +46,22 @@ class VersionTest < Minitest::Test
     assert_equal max_existing_id + 1, next_ids[0]
     assert_equal max_existing_id + 2, next_ids[1]
   end
+
+  def test_next_integer_ids_allocates_unique_ranges_concurrently
+    # Initialize the counter before starting the threads so this exercises the atomic allocation
+    # used by concurrent requests after a tenant's first version has established its counter.
+    MongoTrails::Version.next_integer_ids(1)
+
+    allocations = Queue.new
+    threads = 8.times.map do
+      Thread.new { allocations << MongoTrails::Version.next_integer_ids(25) }
+    end
+    threads.each(&:join)
+
+    ids = 8.times.flat_map { allocations.pop }
+
+    assert_equal 200, ids.size
+    assert_equal 200, ids.uniq.size
+    assert_equal((2..201).to_a, ids.sort)
+  end
 end
