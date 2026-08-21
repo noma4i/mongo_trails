@@ -99,17 +99,21 @@ module MongoTrails
         existing_counter = AutoIncrementCounters.collection.find(_id: counter_id).first
         return if existing_counter.present?
 
-        pipeline = [
-          { '$match' => {} },
-          { '$group' => { _id: nil, max_integer_id: { '$max' => '$integer_id' } } }
-        ]
-        max_id = Version.collection.aggregate(pipeline).first&.dig('max_integer_id').to_i
+        max_id = maximum_existing_integer_id
 
         AutoIncrementCounters.collection.find(_id: counter_id).find_one_and_update(
           { '$set' => { sequence: max_id } },
           upsert: true,
           return_document: :after
         )
+      end
+
+      def maximum_existing_integer_id
+        pipeline = [
+          { '$match' => {} },
+          { '$group' => { _id: nil, max_integer_id: { '$max' => '$integer_id' } } }
+        ]
+        Version.collection.aggregate(pipeline).first&.dig('max_integer_id').to_i
       end
     end
 
@@ -131,14 +135,14 @@ module MongoTrails
 
     before_create :assign_integer_id
 
+    attr_accessor :mongo_trails_source_item
+
     def save_version
-      version = self
-      VersionCommitWrap.new { persist_version(version) }.add_to_transaction
+      schedule_version_persistence(bang: false)
     end
 
     def save_version!
-      version = self
-      VersionCommitWrap.new { persist_version(version, bang: true) }.add_to_transaction
+      schedule_version_persistence(bang: true)
     end
 
     def initialize(data)
@@ -182,6 +186,27 @@ module MongoTrails
     end
 
     private
+
+    def schedule_version_persistence(bang:)
+      return VersionCommitWrap.new { persist_version(self, bang:) }.add_to_transaction unless mongo_trails_source_item
+
+      if (propagation = callback_propagations[event])
+        propagation.merge!(self, bang:)
+      else
+        register_callback_propagation(bang:)
+      end
+    end
+
+    def callback_propagations
+      mongo_trails_source_item.instance_variable_get(:@mongo_trails_callback_propagations) ||
+        mongo_trails_source_item.instance_variable_set(:@mongo_trails_callback_propagations, {})
+    end
+
+    def register_callback_propagation(bang:)
+      propagation = CallbackPropagation.new(mongo_trails_source_item, self, bang:)
+      callback_propagations[event] = propagation
+      VersionCommitWrap.new(rollback: -> { propagation.clear }) { propagation.persist }.add_to_transaction
+    end
 
     def assign_integer_id
       self.integer_id ||= self.class.next_integer_id

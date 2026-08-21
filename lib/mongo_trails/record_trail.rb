@@ -8,6 +8,7 @@ module PaperTrail
       version = build_version_on_create(in_after_callback: true)
       return if exceeds_record_size_limit?(version)
 
+      version.mongo_trails_source_item = @record
       version.save_version!
     end
 
@@ -21,6 +22,7 @@ module PaperTrail
       version = @record.class.paper_trail.version_class.new(data)
       return if exceeds_record_size_limit?(version)
 
+      version.mongo_trails_source_item = @record
       version.save_version
     end
 
@@ -34,6 +36,7 @@ module PaperTrail
       )
       return unless version && !exceeds_record_size_limit?(version)
 
+      version.mongo_trails_source_item = @record
       version.save_version
     end
 
@@ -46,6 +49,7 @@ module PaperTrail
       version = versions_assoc.new(data)
       return if exceeds_record_size_limit?(version)
 
+      version.mongo_trails_source_item = @record
       version.save_version
     end
 
