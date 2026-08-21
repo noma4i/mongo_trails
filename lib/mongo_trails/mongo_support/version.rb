@@ -188,6 +188,7 @@ module MongoTrails
     private
 
     def schedule_version_persistence(bang:)
+      return persist_version(self, bang:) unless ActiveRecord::Base.connection.transaction_open?
       return VersionCommitWrap.new { persist_version(self, bang:) }.add_to_transaction unless mongo_trails_source_item
 
       if (propagation = callback_propagation)

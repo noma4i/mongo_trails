@@ -21,6 +21,21 @@ class TransactionHandlingTest < Minitest::Test
     assert_equal 2, user.versions.count
   end
 
+  def test_save_version_persists_immediately_without_an_active_record_transaction
+    user = User.create!(name: 'John Doe')
+    version = MongoTrails::Version.new(
+      item: user,
+      event: 'update',
+      object: { 'name' => 'John Doe' },
+      object_changes: { 'name' => ['John Doe', 'Jackie Chan'] }
+    )
+
+    version_count = user.versions.count
+    version.save_version
+
+    assert_equal version_count + 1, user.versions.count
+  end
+
   def test_on_update_accumulates_many_updates_on_the_same_instance
     user = User.create!(name: 'John Doe')
     assert_equal 1, user.versions.count
