@@ -102,7 +102,7 @@ module MongoTrails
         max_id = maximum_existing_integer_id
 
         AutoIncrementCounters.collection.find(_id: counter_id).find_one_and_update(
-          { '$set' => { sequence: max_id } },
+          { '$setOnInsert' => { sequence: max_id } },
           upsert: true,
           return_document: :after
         )

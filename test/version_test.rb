@@ -72,4 +72,24 @@ class VersionTest < Minitest::Test
     assert_equal 200, ids.uniq.size
     assert_equal((2..201).to_a, ids.sort)
   end
+
+  def test_next_integer_ids_initializes_the_counter_atomically_under_concurrency
+    ready = Queue.new
+    start = Queue.new
+    threads = 8.times.map do
+      Thread.new do
+        ready << true
+        start.pop
+        MongoTrails::Version.next_integer_ids(25)
+      end
+    end
+    8.times { ready.pop }
+    8.times { start << true }
+
+    ids = threads.flat_map(&:value)
+
+    assert_equal 200, ids.size
+    assert_equal 200, ids.uniq.size
+    assert_equal((1..200).to_a, ids.sort)
+  end
 end
