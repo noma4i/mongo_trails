@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    mongo_trails (13.1.0)
+    mongo_trails (14.0.0)
       mongoid (>= 7, < 10)
       paper_trail (~> 16)
       sidekiq (>= 6.5, < 9)
