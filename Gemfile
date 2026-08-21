@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in ar_shard.gemspec
 gemspec
 
+gem 'activerecord', '~> 8.1'
 gem 'after_commit_everywhere'
 gem 'appraisal', '~> 2.3'
 gem 'minitest', '~> 5.0'
