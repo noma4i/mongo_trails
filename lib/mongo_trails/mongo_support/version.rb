@@ -188,14 +188,21 @@ module MongoTrails
     private
 
     def schedule_version_persistence(bang:)
-      return persist_version(self, bang:) unless ActiveRecord::Base.connection.transaction_open?
-      return VersionCommitWrap.new { persist_version(self, bang:) }.add_to_transaction unless mongo_trails_source_item
+      connection = transaction_connection
+      return persist_version(self, bang:) unless connection.transaction_open?
+      unless mongo_trails_source_item
+        return VersionCommitWrap.new { persist_version(self, bang:) }.add_to_transaction(connection)
+      end
 
       if (propagation = callback_propagation)
-        merge_callback_propagation(propagation, bang:)
+        merge_callback_propagation(propagation, connection:, bang:)
       else
-        register_callback_propagation(bang:)
+        register_callback_propagation(connection:, bang:)
       end
+    end
+
+    def transaction_connection
+      mongo_trails_source_item ? mongo_trails_source_item.class.connection : ActiveRecord::Base.connection
     end
 
     def callback_propagation
@@ -209,15 +216,15 @@ module MongoTrails
         mongo_trails_source_item.instance_variable_set(:@mongo_trails_callback_propagations, {})
     end
 
-    def register_callback_propagation(bang:)
+    def register_callback_propagation(connection:, bang:)
       propagation = CallbackPropagation.new(mongo_trails_source_item, self, bang:)
       callback_propagations[event] = propagation
-      VersionCommitWrap.new(rollback: -> { propagation.clear }) { propagation.persist }.add_to_transaction
+      VersionCommitWrap.new(rollback: -> { propagation.clear }) { propagation.persist }.add_to_transaction(connection)
     end
 
-    def merge_callback_propagation(propagation, bang:)
+    def merge_callback_propagation(propagation, connection:, bang:)
       snapshot = propagation.snapshot
-      VersionCommitWrap.new(rollback: -> { propagation.restore!(snapshot) }) {}.add_to_transaction
+      VersionCommitWrap.new(rollback: -> { propagation.restore!(snapshot) }) {}.add_to_transaction(connection)
       propagation.merge!(self, bang:)
     end
 
