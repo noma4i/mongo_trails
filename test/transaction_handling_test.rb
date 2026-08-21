@@ -59,21 +59,31 @@ class TransactionHandlingTest < Minitest::Test
     assert_equal 'automation-3', user.versions.where(event: 'update').sole.whodunnit
   end
 
-  def test_on_update_keeps_versions_from_distinct_instances_separate
+  def test_distinct_instances_stay_separate_when_first_saved_instance_runs_commit_callbacks
+    with_first_saved_instance_callbacks(true) { assert_distinct_instance_versions }
+  end
+
+  def test_distinct_instances_stay_separate_when_last_saved_instance_runs_commit_callbacks
+    with_first_saved_instance_callbacks(false) { assert_distinct_instance_versions }
+  end
+
+  def test_repeated_distinct_instance_writes_keep_each_writer_and_change_separate
     user = User.create!(name: 'John Doe')
 
     ActiveRecord::Base.transaction do
-      PaperTrail.request.whodunnit = 'automation-1'
-      User.find(user.id).update!(name: 'Arnold Schwarzenegger')
-      PaperTrail.request.whodunnit = 'automation-2'
-      User.find(user.id).update!(title: 'Governor')
+      update_as(user, 'automation-1-round-1', name: 'A1 round 1')
+      update_as(user, 'automation-2-round-1', title: 'A2 round 1')
+      update_as(user, 'automation-1-round-2', name: 'A1 round 2')
+      update_as(user, 'automation-2-round-2', title: 'A2 round 2')
     end
 
     versions = user.versions.where(event: 'update').to_a
-    assert_equal 2, versions.count
-    assert_equal({ 'name' => ['John Doe', 'Arnold Schwarzenegger'] }, versions[0].object_changes)
-    assert_equal({ 'title' => [nil, 'Governor'] }, versions[1].object_changes)
-    assert_equal %w[automation-1 automation-2], versions.map(&:whodunnit)
+    assert_equal 4, versions.count
+    assert_equal(
+      %w[automation-1-round-1 automation-2-round-1 automation-1-round-2 automation-2-round-2],
+      versions.map(&:whodunnit)
+    )
+    assert_equal [%w[name], %w[title], %w[name], %w[title]], versions.map(&:object_changes).map(&:keys)
   end
 
   def test_nested_transaction_rollback_restores_the_outer_propagation
@@ -196,6 +206,19 @@ class TransactionHandlingTest < Minitest::Test
     assert_equal 1, user.versions.count
   end
 
+  def test_on_destroy_keeps_writer_whodunnit_when_request_changes_before_commit
+    user = User.create!(name: 'John Doe')
+
+    ActiveRecord::Base.transaction do
+      PaperTrail.request.whodunnit = 'deleter'
+      user.destroy!
+      PaperTrail.request.whodunnit = 'someone-else'
+    end
+
+    destroy_version = user.versions.where(event: 'destroy').sole
+    assert_equal 'deleter', destroy_version.whodunnit
+  end
+
   def test_version_saved_even_when_other_after_commit_raises
     user = User.create!(name: 'John Doe')
     assert_equal 1, user.versions.count
@@ -240,5 +263,35 @@ class TransactionHandlingTest < Minitest::Test
     )
   ensure
     User.reset_callbacks(:commit)
+  end
+
+  private
+
+  def with_first_saved_instance_callbacks(value)
+    original = ActiveRecord::Base.run_commit_callbacks_on_first_saved_instances_in_transaction
+    ActiveRecord::Base.run_commit_callbacks_on_first_saved_instances_in_transaction = value
+    yield
+  ensure
+    ActiveRecord::Base.run_commit_callbacks_on_first_saved_instances_in_transaction = original
+  end
+
+  def assert_distinct_instance_versions
+    user = User.create!(name: 'John Doe')
+
+    ActiveRecord::Base.transaction do
+      update_as(user, 'automation-1', name: 'Arnold Schwarzenegger')
+      update_as(user, 'automation-2', title: 'Governor')
+    end
+
+    versions = user.versions.where(event: 'update').to_a
+    assert_equal 2, versions.count
+    assert_equal({ 'name' => ['John Doe', 'Arnold Schwarzenegger'] }, versions[0].object_changes)
+    assert_equal({ 'title' => [nil, 'Governor'] }, versions[1].object_changes)
+    assert_equal %w[automation-1 automation-2], versions.map(&:whodunnit)
+  end
+
+  def update_as(user, writer, changes)
+    PaperTrail.request.whodunnit = writer
+    User.find(user.id).update!(changes)
   end
 end
