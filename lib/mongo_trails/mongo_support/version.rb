@@ -192,7 +192,7 @@ module MongoTrails
       return VersionCommitWrap.new { persist_version(self, bang:) }.add_to_transaction unless mongo_trails_source_item
 
       if (propagation = callback_propagation)
-        propagation.merge!(self, bang:)
+        merge_callback_propagation(propagation, bang:)
       else
         register_callback_propagation(bang:)
       end
@@ -213,6 +213,12 @@ module MongoTrails
       propagation = CallbackPropagation.new(mongo_trails_source_item, self, bang:)
       callback_propagations[event] = propagation
       VersionCommitWrap.new(rollback: -> { propagation.clear }) { propagation.persist }.add_to_transaction
+    end
+
+    def merge_callback_propagation(propagation, bang:)
+      snapshot = propagation.snapshot
+      VersionCommitWrap.new(rollback: -> { propagation.restore!(snapshot) }) {}.add_to_transaction
+      propagation.merge!(self, bang:)
     end
 
     def assign_integer_id

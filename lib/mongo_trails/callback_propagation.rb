@@ -19,6 +19,20 @@ module MongoTrails
       self
     end
 
+    def snapshot
+      {
+        object_changes: version.object_changes.to_h.deep_dup,
+        metadata: latest_metadata.deep_dup,
+        bang: @bang
+      }
+    end
+
+    def restore!(snapshot)
+      version.object_changes = snapshot.fetch(:object_changes)
+      snapshot.fetch(:metadata).each { |attribute, value| version[attribute] = value }
+      @bang = snapshot.fetch(:bang)
+    end
+
     def persist
       version.send(:persist_version, version, bang: @bang)
     ensure
@@ -53,11 +67,11 @@ module MongoTrails
     end
 
     def copy_latest_metadata!(new_version)
-      new_version.attributes.each do |attribute, value|
-        next if PRESERVED_ATTRIBUTES.include?(attribute)
+      latest_metadata(new_version).each { |attribute, value| version[attribute] = value }
+    end
 
-        version[attribute] = value
-      end
+    def latest_metadata(source = version)
+      source.attributes.except(*PRESERVED_ATTRIBUTES)
     end
   end
 end

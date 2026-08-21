@@ -76,6 +76,46 @@ class TransactionHandlingTest < Minitest::Test
     assert_equal %w[automation-1 automation-2], versions.map(&:whodunnit)
   end
 
+  def test_nested_transaction_rollback_restores_the_outer_propagation
+    user = User.create!(name: 'John Doe')
+
+    ActiveRecord::Base.transaction do
+      PaperTrail.request.whodunnit = 'outer-writer'
+      user.update!(name: 'Arnold Schwarzenegger')
+
+      ActiveRecord::Base.transaction(requires_new: true) do
+        PaperTrail.request.whodunnit = 'rolled-back-writer'
+        user.update!(title: 'Governor')
+        raise ActiveRecord::Rollback
+      end
+    end
+
+    version = user.versions.where(event: 'update').sole
+    assert_equal({ 'name' => ['John Doe', 'Arnold Schwarzenegger'] }, version.object_changes)
+    assert_equal 'outer-writer', version.whodunnit
+  end
+
+  def test_nested_transaction_commit_keeps_the_merged_propagation
+    user = User.create!(name: 'John Doe')
+
+    ActiveRecord::Base.transaction do
+      PaperTrail.request.whodunnit = 'outer-writer'
+      user.update!(name: 'Arnold Schwarzenegger')
+
+      ActiveRecord::Base.transaction(requires_new: true) do
+        PaperTrail.request.whodunnit = 'inner-writer'
+        user.update!(title: 'Governor')
+      end
+    end
+
+    version = user.versions.where(event: 'update').sole
+    assert_equal(
+      { 'name' => ['John Doe', 'Arnold Schwarzenegger'], 'title' => [nil, 'Governor'] },
+      version.object_changes
+    )
+    assert_equal 'inner-writer', version.whodunnit
+  end
+
   def test_on_update_does_not_create_version_if_transaction_not_completed
     user = User.create!(name: 'John Doe')
     assert_equal 1, user.versions.count
