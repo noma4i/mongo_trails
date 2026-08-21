@@ -2,8 +2,9 @@
 
 module MongoTrails
   class VersionCommitWrap
-    def initialize(&callback)
+    def initialize(rollback: nil, &callback)
       @callback = callback
+      @rollback = rollback
       @executed = false
     end
 
@@ -19,6 +20,7 @@ module MongoTrails
 
     def rolledback!(*)
       @executed = true
+      @rollback&.call
     end
 
     def committed!(**)

@@ -21,22 +21,44 @@ class TransactionHandlingTest < Minitest::Test
     assert_equal 2, user.versions.count
   end
 
-  def test_on_update_many_versions_for_many_updates
+  def test_on_update_accumulates_many_updates_on_the_same_instance
     user = User.create!(name: 'John Doe')
     assert_equal 1, user.versions.count
 
     ActiveRecord::Base.transaction do
+      PaperTrail.request.whodunnit = 'automation-1'
       user.update!(name: 'Arnold Schwarzenegger')
       user.update!(title: 'Governor')
+      PaperTrail.request.whodunnit = 'automation-3'
       user.update!(name: 'Jackie Chan')
     end
 
-    assert_equal 4, user.versions.count
-    assert_equal({ 'name' => ['John Doe', 'Arnold Schwarzenegger'] },
-                 user.versions.where(event: 'update')[0].object_changes)
-    assert_equal({ 'title' => [nil, 'Governor'] }, user.versions.where(event: 'update')[1].object_changes)
-    assert_equal({ 'name' => ['Arnold Schwarzenegger', 'Jackie Chan'] },
-                 user.versions.where(event: 'update')[2].object_changes)
+    assert_equal 2, user.versions.count
+    assert_equal(
+      {
+        'name' => ['John Doe', 'Jackie Chan'],
+        'title' => [nil, 'Governor']
+      },
+      user.versions.where(event: 'update').sole.object_changes
+    )
+    assert_equal 'automation-3', user.versions.where(event: 'update').sole.whodunnit
+  end
+
+  def test_on_update_keeps_versions_from_distinct_instances_separate
+    user = User.create!(name: 'John Doe')
+
+    ActiveRecord::Base.transaction do
+      PaperTrail.request.whodunnit = 'automation-1'
+      User.find(user.id).update!(name: 'Arnold Schwarzenegger')
+      PaperTrail.request.whodunnit = 'automation-2'
+      User.find(user.id).update!(title: 'Governor')
+    end
+
+    versions = user.versions.where(event: 'update').to_a
+    assert_equal 2, versions.count
+    assert_equal({ 'name' => ['John Doe', 'Arnold Schwarzenegger'] }, versions[0].object_changes)
+    assert_equal({ 'title' => [nil, 'Governor'] }, versions[1].object_changes)
+    assert_equal %w[automation-1 automation-2], versions.map(&:whodunnit)
   end
 
   def test_on_update_does_not_create_version_if_transaction_not_completed
@@ -49,6 +71,10 @@ class TransactionHandlingTest < Minitest::Test
     end
 
     assert_equal 1, user.versions.count
+
+    user.reload.update!(name: 'Chuck Norris')
+    assert_equal 2, user.versions.count
+    assert_equal ['John Doe', 'Chuck Norris'], user.versions.where(event: 'update').sole.object_changes['name']
   end
 
   def test_on_create_creates_version_if_transaction_completed
@@ -130,13 +156,14 @@ class TransactionHandlingTest < Minitest::Test
     end
 
     versions = user.versions.where(event: 'update').to_a
-    assert_equal 5, versions.count
-
-    assert_equal({ 'name' => ['John Doe', 'Arnold Schwarzenegger'] }, versions[0].object_changes)
-    assert_equal({ 'title' => [nil, 'Governor'] }, versions[1].object_changes)
-    assert_equal({ 'name' => ['Arnold Schwarzenegger', 'Jackie Chan'] }, versions[2].object_changes)
-    assert_equal({ 'title' => %w[Governor Actor] }, versions[3].object_changes)
-    assert_equal({ 'name' => ['Jackie Chan', 'Bruce Lee'] }, versions[4].object_changes)
+    assert_equal 1, versions.count
+    assert_equal(
+      {
+        'name' => ['John Doe', 'Bruce Lee'],
+        'title' => [nil, 'Actor']
+      },
+      versions.sole.object_changes
+    )
   ensure
     User.reset_callbacks(:commit)
   end
