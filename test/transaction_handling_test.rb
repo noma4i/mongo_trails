@@ -36,6 +36,26 @@ class TransactionHandlingTest < Minitest::Test
     assert_equal version_count + 1, user.versions.count
   end
 
+  def test_sourced_version_uses_the_source_models_transaction_connection
+    user = User.create!(name: 'John Doe')
+    version = MongoTrails::Version.new(
+      item: user,
+      event: 'update',
+      object: { 'name' => 'John Doe' },
+      object_changes: { 'name' => ['John Doe', 'Jackie Chan'] }
+    )
+    version.mongo_trails_source_item = user
+    connection = TransactionConnectionStub.new
+
+    User.stub(:connection, connection) { version.save_version }
+
+    refute_nil connection.transaction_record
+    assert_empty user.versions.where(event: 'update')
+
+    connection.transaction_record.rolledback!
+    assert_empty user.versions.where(event: 'update')
+  end
+
   def test_on_update_accumulates_many_updates_on_the_same_instance
     user = User.create!(name: 'John Doe')
     assert_equal 1, user.versions.count
@@ -266,6 +286,18 @@ class TransactionHandlingTest < Minitest::Test
   end
 
   private
+
+  class TransactionConnectionStub
+    attr_reader :transaction_record
+
+    def transaction_open?
+      true
+    end
+
+    def add_transaction_record(record)
+      @transaction_record = record
+    end
+  end
 
   def with_first_saved_instance_callbacks(value)
     original = ActiveRecord::Base.run_commit_callbacks_on_first_saved_instances_in_transaction

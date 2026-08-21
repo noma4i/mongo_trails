@@ -30,8 +30,8 @@ module MongoTrails
       @callback.call
     end
 
-    def add_to_transaction(*)
-      ActiveRecord::Base.connection.add_transaction_record(self)
+    def add_to_transaction(connection = ActiveRecord::Base.connection)
+      connection.add_transaction_record(self)
     end
   end
 end
