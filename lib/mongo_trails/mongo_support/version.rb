@@ -190,11 +190,17 @@ module MongoTrails
     def schedule_version_persistence(bang:)
       return VersionCommitWrap.new { persist_version(self, bang:) }.add_to_transaction unless mongo_trails_source_item
 
-      if (propagation = callback_propagations[event])
+      if (propagation = callback_propagation)
         propagation.merge!(self, bang:)
       else
         register_callback_propagation(bang:)
       end
+    end
+
+    def callback_propagation
+      return callback_propagations[event] unless event == 'update'
+
+      callback_propagations[event] || callback_propagations['create']
     end
 
     def callback_propagations

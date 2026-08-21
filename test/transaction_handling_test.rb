@@ -88,6 +88,25 @@ class TransactionHandlingTest < Minitest::Test
     assert_equal 1, user.versions.count
   end
 
+  def test_on_update_after_create_is_folded_into_the_create_version
+    user = nil
+
+    ActiveRecord::Base.transaction do
+      user = User.create!(name: 'John Doe')
+      user.update!(name: 'Jackie Chan', title: 'Actor')
+    end
+
+    assert_equal ['create'], user.versions.pluck(:event)
+    assert_equal(
+      {
+        'id' => [nil, user.id],
+        'name' => [nil, 'Jackie Chan'],
+        'title' => [nil, 'Actor']
+      },
+      user.versions.sole.object_changes.except('created_at', 'updated_at')
+    )
+  end
+
   def test_on_create_does_not_create_version_if_transaction_not_completed
     assert_equal 0, MongoTrails::Version.count
 
