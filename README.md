@@ -45,9 +45,10 @@ Done!
 
 ## Releasing
 
-Update `MongoTrails::VERSION` in `lib/mongo_trails/version.rb` using semantic versioning, commit the change, and run:
+Update `MongoTrails::VERSION` and all appraisal lockfiles, then validate and release:
 
 ```bash
+bin/bump-version VERSION
 bundle exec rake test
 bundle exec rubocop
 bundle exec rake release:validate
