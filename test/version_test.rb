@@ -161,4 +161,26 @@ class VersionTest < Minitest::Test
     assert_same operation_failure, raised_error
     assert_empty remaining_view_ids
   end
+
+  def test_next_integer_ids_does_not_swallow_duplicate_key_errors_from_counter_lookup
+    duplicate_key_error = Mongo::Error::OperationFailure.new(
+      'E11000 duplicate key error during counter lookup',
+      nil,
+      code: 11_000
+    )
+    counter_lookup = Object.new.tap do |view|
+      view.define_singleton_method(:first) { raise duplicate_key_error }
+    end
+    collection = AutoIncrementCounters.collection
+
+    raised_error = AutoIncrementCounters.stub(:collection, collection) do
+      collection.stub(:find, counter_lookup) do
+        assert_raises(Mongo::Error::OperationFailure) do
+          MongoTrails::Version.next_integer_ids(1)
+        end
+      end
+    end
+
+    assert_same duplicate_key_error, raised_error
+  end
 end

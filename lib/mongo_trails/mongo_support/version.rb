@@ -100,7 +100,10 @@ module MongoTrails
         return if existing_counter.present?
 
         max_id = maximum_existing_integer_id
+        initialize_counter(counter_id, max_id)
+      end
 
+      def initialize_counter(counter_id, max_id)
         AutoIncrementCounters.collection.find(_id: counter_id).find_one_and_update(
           { '$setOnInsert' => { sequence: max_id } },
           upsert: true,
