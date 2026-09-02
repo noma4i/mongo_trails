@@ -92,4 +92,73 @@ class VersionTest < Minitest::Test
     assert_equal 200, ids.uniq.size
     assert_equal((1..200).to_a, ids.sort)
   end
+
+  def test_next_integer_ids_recovers_when_a_concurrent_initializer_creates_the_counter
+    duplicate_key_error = Mongo::Error::OperationFailure.new(
+      'E11000 duplicate key error collection: auto_increment_counters index: _id_',
+      nil,
+      code: 11_000
+    )
+    counter_lookup = Object.new.tap do |view|
+      view.define_singleton_method(:first) { nil }
+    end
+    counter_initialization = Object.new.tap do |view|
+      view.define_singleton_method(:find_one_and_update) do |*_args, **_kwargs|
+        raise duplicate_key_error
+      end
+    end
+    counter_increment = Object.new.tap do |view|
+      view.define_singleton_method(:find_one_and_update) do |*_args, **_kwargs|
+        { 'sequence' => 1 }
+      end
+    end
+    collection = AutoIncrementCounters.collection
+    counter_views = {
+      lookup: counter_lookup,
+      initialization: counter_initialization,
+      increment: counter_increment
+    }
+    remaining_view_ids = counter_views.keys
+
+    AutoIncrementCounters.stub(:collection, collection) do
+      collection.stub(:find, ->(*) { counter_views.fetch(remaining_view_ids.shift) }) do
+        assert_equal [1], MongoTrails::Version.next_integer_ids(1)
+      end
+    end
+
+    assert_empty remaining_view_ids
+  end
+
+  def test_next_integer_ids_reraises_other_counter_initialization_failures
+    operation_failure = Mongo::Error::OperationFailure.new(
+      'Unauthorized',
+      nil,
+      code: 13
+    )
+    counter_lookup = Object.new.tap do |view|
+      view.define_singleton_method(:first) { nil }
+    end
+    counter_initialization = Object.new.tap do |view|
+      view.define_singleton_method(:find_one_and_update) do |*_args, **_kwargs|
+        raise operation_failure
+      end
+    end
+    collection = AutoIncrementCounters.collection
+    counter_views = {
+      lookup: counter_lookup,
+      initialization: counter_initialization
+    }
+    remaining_view_ids = counter_views.keys
+
+    raised_error = AutoIncrementCounters.stub(:collection, collection) do
+      collection.stub(:find, ->(*) { counter_views.fetch(remaining_view_ids.shift) }) do
+        assert_raises(Mongo::Error::OperationFailure) do
+          MongoTrails::Version.next_integer_ids(1)
+        end
+      end
+    end
+
+    assert_same operation_failure, raised_error
+    assert_empty remaining_view_ids
+  end
 end
