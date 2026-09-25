@@ -100,12 +100,19 @@ module MongoTrails
         return if existing_counter.present?
 
         max_id = maximum_existing_integer_id
+        initialize_counter(counter_id, max_id)
+      end
 
+      def initialize_counter(counter_id, max_id)
         AutoIncrementCounters.collection.find(_id: counter_id).find_one_and_update(
           { '$setOnInsert' => { sequence: max_id } },
           upsert: true,
           return_document: :after
         )
+      rescue Mongo::Error::OperationFailure => e
+        # DocumentDB can return E11000 when another writer creates this exact counter after the
+        # existence check. The caller can safely increment the counter created by that writer.
+        raise unless e.code == 11_000
       end
 
       def maximum_existing_integer_id

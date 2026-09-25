@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    mongo_trails (14.0.0)
+    mongo_trails (14.0.1)
       mongoid (>= 7, < 10)
       ostruct
       paper_trail (~> 16)

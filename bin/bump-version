@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bundler'
+require 'pathname'
+
+ROOT = Pathname(__dir__).join('..').expand_path
+VERSION_FILE = ROOT.join('lib/mongo_trails/version.rb')
+LOCKFILES = [ROOT.join('Gemfile.lock'), *ROOT.glob('gemfiles/*.gemfile.lock')].freeze
+VERSION_PATTERN = /VERSION = ['"]([^'"]+)['"]/
+
+def abort_with_usage
+  abort 'Usage: bin/bump-version VERSION'
+end
+
+abort_with_usage unless ARGV.one?
+
+requested_version = ARGV.first
+unless Gem::Version.correct?(requested_version) && requested_version.match?(/\A\d+\.\d+\.\d+(?:\.[0-9A-Za-z]+)*\z/)
+  abort "Invalid version: #{requested_version.inspect}; expected a version such as 14.0.2 or 15.0.0.pre.1"
+end
+
+files = [VERSION_FILE, *LOCKFILES]
+original_contents = files.to_h { |path| [path, path.binread] }
+
+begin
+  version_source = VERSION_FILE.read
+  abort "Could not find VERSION assignment in #{VERSION_FILE}" unless version_source.match?(VERSION_PATTERN)
+
+  VERSION_FILE.write(version_source.sub(VERSION_PATTERN, "VERSION = '#{requested_version}'"))
+
+  bundle = Gem.bin_path('bundler', 'bundle')
+  LOCKFILES.each do |lockfile|
+    gemfile = Pathname(lockfile.to_s.delete_suffix('.lock'))
+    puts "Updating #{lockfile.relative_path_from(ROOT)}"
+
+    success = system(
+      {
+        'BUNDLE_GEMFILE' => gemfile.to_s,
+        'BUNDLE_FROZEN' => 'false',
+        'BUNDLE_DEPLOYMENT' => 'false'
+      },
+      Gem.ruby,
+      bundle,
+      'lock',
+      '--local',
+      chdir: ROOT.to_s
+    )
+    raise "Failed to update #{lockfile}" unless success
+  end
+
+  stale_lockfiles = LOCKFILES.reject do |lockfile|
+    lockfile.read.match?(/^\s+mongo_trails \(#{Regexp.escape(requested_version)}\)$/)
+  end
+  raise "Version was not updated in: #{stale_lockfiles.join(', ')}" if stale_lockfiles.any?
+
+  puts "Updated mongo_trails to #{requested_version}"
+  puts 'Next: bundle exec rake test && bundle exec rubocop && git diff --check'
+rescue Interrupt
+  original_contents.each { |path, contents| path.binwrite(contents) }
+  warn 'Version bump interrupted; changed files were restored'
+  exit 130
+rescue StandardError => e
+  original_contents.each { |path, contents| path.binwrite(contents) }
+  warn "Version bump failed; changed files were restored: #{e.message}"
+  exit 1
+end
