@@ -95,12 +95,20 @@ module MongoTrails
         "#{name}:#{scope || prefix_map}"
       end
 
-      def ensure_counter_initialized(counter_id, _scope)
+      def ensure_counter_initialized(counter_id, scope)
         existing_counter = AutoIncrementCounters.collection.find(_id: counter_id).first
         return if existing_counter.present?
 
-        max_id = maximum_existing_integer_id
+        max_id = legacy_counter_sequence(scope) || maximum_existing_integer_id
         initialize_counter(counter_id, max_id)
+      end
+
+      # Up to 13.x, mongoid-autoinc kept this counter under its own key and field. Continuing from
+      # it skips scanning the whole versions collection on the first write after upgrading, which
+      # every concurrent writer would otherwise repeat until one finished.
+      def legacy_counter_sequence(scope)
+        legacy_id = "#{name.underscore}_integer_id_#{scope || prefix_map}"
+        AutoIncrementCounters.collection.find(_id: legacy_id).first&.[]('c')
       end
 
       def initialize_counter(counter_id, max_id)

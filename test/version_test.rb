@@ -55,6 +55,15 @@ class VersionTest < Minitest::Test
     assert_equal max_existing_id + 2, next_ids[1]
   end
 
+  def test_next_integer_ids_continues_from_the_legacy_autoinc_counter
+    AutoIncrementCounters.collection.insert_one(_id: 'mongo_trails/version_integer_id_test', c: 41)
+    MongoTrails::Version.collection.insert_one(integer_id: 7)
+
+    MongoTrails::Version.stub(:maximum_existing_integer_id, -> { flunk 'scanned the versions collection' }) do
+      assert_equal [42, 43], MongoTrails::Version.next_integer_ids(2)
+    end
+  end
+
   def test_next_integer_ids_allocates_unique_ranges_concurrently
     # Initialize the counter before starting the threads so this exercises the atomic allocation
     # used by concurrent requests after a tenant's first version has established its counter.
@@ -115,6 +124,7 @@ class VersionTest < Minitest::Test
     collection = AutoIncrementCounters.collection
     counter_views = {
       lookup: counter_lookup,
+      legacy_lookup: counter_lookup,
       initialization: counter_initialization,
       increment: counter_increment
     }
@@ -146,6 +156,7 @@ class VersionTest < Minitest::Test
     collection = AutoIncrementCounters.collection
     counter_views = {
       lookup: counter_lookup,
+      legacy_lookup: counter_lookup,
       initialization: counter_initialization
     }
     remaining_view_ids = counter_views.keys
