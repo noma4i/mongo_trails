@@ -43,6 +43,21 @@ Done!
 `PaperTrail.config.sidekiq_worker = PaperTrail::WriteVersionWorker` - Worker class
 `PaperTrail.config.sidekiq_options = { queue: :default }` - Options for Sidekiq
 
+`PaperTrail.config.enable_integer_id = true` - Give every version a sequential `integer_id` from a per-collection counter, and order previous/next versions by it. With `false` no counter is used, `integer_id` stays empty and versions are ordered by `created_at`. The first write to a collection with no counter scans the whole collection for its highest `integer_id`, which is expensive on large collections (and on DocumentDB, where no index serves it).
+
+`PaperTrail.config.on_write_error = nil` - A callable receiving `(error, version)` when a version write fails because MongoDB is unreachable or drops the connection (`MongoTrails::Version::WRITE_ERRORS`). Inside a transaction versions are written from the after-commit callbacks, so a raising write skips every after-commit callback behind it; a handler lets them run. Without a handler the error raises. Other errors always raise.
+
+```ruby
+PaperTrail.config.on_write_error = lambda do |error, version|
+  ErrorReporter.report(error, item_type: version.item_type, item_id: version.item_id)
+  version.enqueue_write unless PaperTrail.config.enable_sidekiq # retry through Sidekiq
+end
+```
+
+`PaperTrail::WriteVersionWorker` rebuilds the queued version with `MongoTrails::Version.rebuild` (its `_id`, `created_at` and metadata are kept, `#initialize` is not run again), and treats a version whose `_id` is already stored as written, so a retried write is safe.
+
+`MongoTrails::Version.bulk_insert(versions)` - Inserts many versions in one `insert_many`, allocating their `integer_id`s in one counter update when `enable_integer_id` is on.
+
 ## Releasing
 
 Update `MongoTrails::VERSION` and all appraisal lockfiles, then validate and release:
