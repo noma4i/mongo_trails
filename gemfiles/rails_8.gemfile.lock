@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    mongo_trails (17.0.0)
+    mongo_trails (17.1.0)
       mongoid (>= 7, < 10)
       ostruct
       paper_trail (>= 16, < 18)
@@ -172,7 +172,7 @@ CHECKSUMS
   mcp (0.8.0) sha256=ae8bd146bb8e168852866fd26f805f52744f6326afb3211e073f78a95e0c34fb
   minitest (5.27.0) sha256=2d3b17f8a36fe7801c1adcffdbc38233b938eb0b4966e97a6739055a45fa77d5
   mongo (2.25.0) sha256=b4663884d23523d24f50c579846956444410f939093e8c2a95fa4b76bb929053
-  mongo_trails (17.0.0)
+  mongo_trails (17.1.0)
   mongoid (9.1.0) sha256=ef7b50f4c84e636850c3431bc3c92f98481f4e1d147ff06a1c21242d0b242a9e
   ostruct (0.6.3) sha256=95a2ed4a4bd1d190784e666b47b2d3f078e4a9efda2fccf18f84ddc6538ed912
   paper_trail (17.0.0) sha256=1c2842061d3874ca7015908e821e2aa14f9b982af2acb2a7974713bf79021c85
