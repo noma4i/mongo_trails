@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'mongoid', '>= 7', '< 10'
   s.add_dependency 'ostruct'
-  s.add_dependency 'paper_trail', '~> 16'
+  s.add_dependency 'paper_trail', '>= 16', '< 18'
   s.add_dependency 'sidekiq', '>= 6.5', '< 9'
 
   s.required_ruby_version = '>= 3.2'
