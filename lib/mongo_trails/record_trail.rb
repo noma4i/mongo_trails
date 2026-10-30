@@ -43,8 +43,23 @@ module PaperTrail
     def record_update_columns(changes)
       return unless enabled?
 
-      event = Events::Update.new(@record, false, false, changes)
-      data = event.data.merge(data_for_update_columns)
+      save_update_columns_version(changes)
+    end
+
+    # Records a 'restore' version for a soft-deleted record brought back outside Paper Trail's callbacks,
+    # e.g. by Paranoia, which writes with update_columns. `changes` maps each restored column to
+    # [before, after], such as { 'deleted_at' => [deleted_at, nil] }.
+    def record_restore(changes)
+      return unless enabled?
+
+      save_update_columns_version(changes, event: MongoTrails::RESTORE_EVENT)
+    end
+
+    private
+
+    def save_update_columns_version(changes, event: nil)
+      data = Events::Update.new(@record, false, false, changes).data.merge(data_for_update_columns)
+      data[:event] = event if event
       versions_assoc = @record.send(@record.class.versions_association_name)
       version = versions_assoc.new(data)
       return if exceeds_record_size_limit?(version)
@@ -52,8 +67,6 @@ module PaperTrail
       version.mongo_trails_source_item = @record
       version.save_version
     end
-
-    private
 
     def exceeds_record_size_limit?(version)
       size_limit = PaperTrail.config.mongo_trails_config&.dig(:record_size_limit)
