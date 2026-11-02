@@ -8,7 +8,9 @@ module PaperTrail
       :enable_sidekiq,
       :sidekiq_worker,
       :sidekiq_options,
-      :mongo_trails_config
+      :mongo_trails_config,
+      :enable_integer_id,
+      :on_write_error
     )
 
     def initialize
@@ -19,6 +21,8 @@ module PaperTrail
       @has_paper_trail_defaults = {}
       @enable_sidekiq = false
       @sidekiq_options = { queue: :default, retry: true, backtrace: false }
+      @enable_integer_id = true
+      @on_write_error = nil
     end
   end
 end

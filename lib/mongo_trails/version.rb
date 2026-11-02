@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module MongoTrails
-  VERSION = '17.0.1'
+  VERSION = '17.1.1'
 end

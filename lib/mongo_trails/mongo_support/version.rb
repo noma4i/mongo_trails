@@ -24,9 +24,35 @@ PaperTrail.config.has_paper_trail_defaults = { versions: { class_name: 'MongoTra
 
 module MongoTrails
   class Version
+    # Errors a version write can raise when MongoDB is unreachable or drops the connection. Only these reach
+    # PaperTrail.config.on_write_error; anything else (a validation error, a bug) still raises.
+    WRITE_ERRORS = [Mongo::Error, IOError, SystemCallError, Timeout::Error].freeze
+    DUPLICATE_KEY_ERROR_CODE = 11_000
+
     class << self
       def find(id)
-        find_by(integer_id: id)
+        integer_id_enabled? ? find_by(integer_id: id) : super
+      end
+
+      def integer_id_enabled?
+        PaperTrail.config.enable_integer_id != false
+      end
+
+      # PaperTrail orders previous/next versions by primary key when it is an integer, which here means integer_id.
+      # Without integer_id they are ordered by created_at.
+      def primary_key_is_int?
+        integer_id_enabled?
+      end
+
+      # Rebuilds a version from the JSON of one that was already built (see #enqueue_write), keeping its _id,
+      # created_at and metadata. It does not run #initialize, so build-time defaults are not applied a second time.
+      def rebuild(attributes)
+        document = attributes.to_h.stringify_keys.to_h { |name, value| [name, from_json_value(name, value)] }
+        instantiate(document).tap { |version| version.new_record = true }
+      end
+
+      def duplicate_key_error?(error)
+        error.respond_to?(:code) && error.code == DUPLICATE_KEY_ERROR_CODE
       end
 
       def incrementing_fields
@@ -62,6 +88,17 @@ module MongoTrails
         ((max_integer_id - count + 1)..max_integer_id).to_a
       end
 
+      def bulk_insert(versions)
+        return [] if versions.empty?
+
+        documents = versions.map { |version| bulk_insert_attributes(version) }
+        if integer_id_enabled?
+          integer_ids = next_integer_ids(documents.count { |document| document['integer_id'].nil? })
+          documents.each { |document| document['integer_id'] ||= integer_ids.shift }
+        end
+        collection.insert_many(documents)
+      end
+
       def bulk_insert_attributes(version)
         version = version.is_a?(self) ? version : new(version)
         attrs = version.attributes.dup
@@ -90,6 +127,17 @@ module MongoTrails
       def after_create(_name); end
 
       private
+
+      # as_json turns ObjectIds and times into strings; every other field type survives JSON as is.
+      def from_json_value(name, value)
+        return value unless value.is_a?(String)
+
+        type = fields[name]&.type
+        return BSON::ObjectId.legal?(value) ? BSON::ObjectId.from_string(value) : value if type == BSON::ObjectId
+        return (Time.zone || Time).parse(value) if [Time, DateTime].include?(type)
+
+        value
+      end
 
       def counter_key(scope)
         "#{name}:#{scope || prefix_map}"
@@ -150,6 +198,17 @@ module MongoTrails
 
     def save_version!
       schedule_version_persistence(bang: true)
+    end
+
+    # Queues the write of this version for PaperTrail::WriteVersionWorker (or the configured sidekiq_worker).
+    def enqueue_write
+      worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : PaperTrail::WriteVersionWorker
+      args = attributes.as_json
+      if worker == PaperTrail::WriteVersionWorker
+        worker.set(PaperTrail.config.sidekiq_options).perform_async(args)
+      else
+        worker.perform_async(args)
+      end
     end
 
     def initialize(data)
@@ -236,6 +295,8 @@ module MongoTrails
     end
 
     def assign_integer_id
+      return unless self.class.integer_id_enabled?
+
       self.integer_id ||= self.class.next_integer_id
     end
 
@@ -248,10 +309,19 @@ module MongoTrails
       current_time
     end
 
+    # Inside a transaction this runs from VersionCommitWrap#committed!, among the source record's after-commit
+    # callbacks, so an error raised here skips every callback queued behind it. PaperTrail.config.on_write_error
+    # receives the connection errors instead of letting them raise; without a handler they raise as before.
     def persist_version(version, bang: false)
-      return version.send(:async_save!) if sidekiq_enabled?
+      return version.enqueue_write if sidekiq_enabled?
 
       bang ? version.save! : version.save
+    rescue *WRITE_ERRORS => e
+      handler = PaperTrail.config.on_write_error
+      raise unless handler
+
+      handler.call(e, version)
+      nil
     end
 
     def parse_time(value)
@@ -273,14 +343,7 @@ module MongoTrails
       @parser ||= URI::Parser.new
     end
 
-    def async_save!
-      worker = defined?(PaperTrail.config.sidekiq_worker.queue) ? PaperTrail.config.sidekiq_worker : PaperTrail::WriteVersionWorker
-      args = attributes.as_json
-      if worker == PaperTrail::WriteVersionWorker
-        worker.set(PaperTrail.config.sidekiq_options).perform_async(args)
-      else
-        worker.perform_async(args)
-      end
-    end
+    # Kept for callers of the old private name; use #enqueue_write.
+    alias async_save! enqueue_write
   end
 end
